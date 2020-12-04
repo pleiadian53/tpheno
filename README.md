@@ -1,4 +1,4 @@
-Temporal Phenotyping (tpheno)
+Temporal Phenotyping (TPheno)
 =============================
 
 1. Introduction

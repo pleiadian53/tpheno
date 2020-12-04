@@ -1,0 +1,9 @@
+
+
+### Daily ### 
+
+>>> 04.17
+
+
+[todo] sample ts subset proportional to classes
+       + sample_class()

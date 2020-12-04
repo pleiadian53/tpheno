@@ -1,0 +1,180 @@
+
+
+
+# AKI (584.9) -> CKD? 
+  <app> pathAnalyzerTest.query_local_aki() … 
+> CKD: Control
+  758/204278 => 0.00371062963217
+> CKD: CKD Stage 1
+  405/11425 => 0.0354485776805
+> CKD: CKD Stage 2
+  2686/99670 => 0.0269489314739
+> CKD: CKD Stage 3
+  3613/46936 => 0.0769771603886
+> CKD: CKD Stage 4
+  1229/7597 => 0.161774384626
+> CKD: CKD Stage 5
+  4220/19444 => 0.217033532195
+  <summyar> there is an increasing trend that the later the CKD stage, the more comorbid cases of AKI
+
+# cut off the segments that go beyond the date of applying eMERGE phenotyping … ( )
+
+# test local mode (2)  | win: 8 
+  <app> pathAnalyzer-Lfset  … focuse on ctypes: [‘diag', 'med', ]
+
+# test local mode
+  <app> pathAnalyzer-Lfset  | win: 7
+  
+  + test fset creation and classificaiton 
+      <func> loadLCSFeatureTSet
+
+# test global mode
+  <app> pathAnalyzer-Gfset  | win: 4
+
+  + separate diag from med => ctypes: [‘diag', 'med', ] 
+
+# entire suite 
+  <app> pathAnalyzer | win: 3
+
+—— 
+
+<test>
+# derive feature set via existing globally dervied LCS features (test) 
+  <app> pathAnalyzer-Gfset | win4, ckd_path_fset.log … ( )
+
+# derive locally enriched LCS … runExperimentLocallyDerivedLCS(**kargs) 
+  <app> pathAnalyzer  | win3, ckd_path.log … ( )
+  + wrapper on pathwayAnalyzer.t_lcs()  
+  
+  + params
+    a. how many? enriched: 200, rare 200
+
+  + settings  
+    => make mroe sense to separate diagnosis and med codes
+    a. mixed ()
+    b. diag 
+    c. med
+
+# derive globally enriched/rare LCS … runExperimentGloballyDerivedLCS()
+  <app> pathAnalyzer | win3, ckd_path.log … ( )
+
+  + params: how many? 
+    enriched 200, rare 200
+
+
+
+# incremental update @ deriveLCS()
+  : probably always good to explore new patterns 
+    but this may result in conflicting desired number of patterns (because more is added) 
+    => subsample to downsize the sample … ( )
+
+
+# use existing global features to compare frequecies in different strata 
+  pathwayAnalyzer-GtoL | win7, ckd_path2.log … ( ) 
+     
+
+
+
+
+# derive global LCSs again (because min_ndocs should be low) 
+       : rare patterns may be more important
+       => pathAnalyzer-Glcs.py  | win8, ckd_path3.log … ( ) 
+           + saved a copy to ../test/log/ckd_path-global_lcs.log  … ( )
+
+
+
+# using existing global LCSs, make training data, followed by t_classify()
+  pathAnalyzer-Gfset.py  | win4, ckd_path_fset.log … ( )
+
+
+# makeLCSFeatureTSet2a() 
+   - create LCS-based feature set
+       + add load_fset
+       + use rare features but df >= 2
+
+  <log> Pathway> loaded lcs data from:
+        tpheno/seqmaker/data/CKD/pathway/lcs_global-df-regular-iso.csv
+
+# pathAnalyzer-GtoL | screen: win7 … log: ckd_path2.log
+    - given derived global LCSs
+      find their distribution in each CKD stratum 
+      t_lcs2() 
+
+    - derive global LCSs again (because min_ndocs should be low) 
+       : rare patterns may be more important
+       => pathAnalyzer-Glcs.py  | win8, ckd_path3.log
+
+
+filterDocuments> Policy: Remove empty documents ...
+transformDocuments> nD: 12898 (<- 12898), nT: 12898, nL: 12898
+  + Stats: n_docs: 12898, n_classes:1
+transformDocuments2> nD: 7106, nT: 7106, nL: 7106
+  + Stats: n_docs: 7106, n_classes:1 | cohort: ?
+    + (after transform) nDoc: 12898 -> 7106, size(D0): 284 -> 139
+    + (after transform) nD: 7106, nT: 7106, nL: 7106
+  + label: Control | nD: 124493, nT: 124493
+  + label: CKD Stage 5 | nD: 11449, nT: 11449
+  + label: CKD Stage 4 | nD: 5634, nT: 5634
+  + label: CKD Stage 3 | nD: 34908, nT: 34908
+  + label: CKD Stage 2 | nD: 75389, nT: 75389
+  + label: CKD Stage 1 | nD: 7106, nT: 7106
+
+
+
+    # C. Labeling 
+    lmap = seqparams.System.relabel()  # policy_relabel()
+    # label -> entry: Di, Ti, Li
+    stratified = stratifyDocuments(cohort=cohort_name, seq_ptype=seq_ptype,
+                    predicate=kargs.get('predicate', None), 
+                    simplify_code=kargs.get('simplify_code', simplifyCode), 
+
+                    # source
+                    inputdir=inputdir, 
+                    ifiles=ifiles, 
+
+                    # relabeling operation 
+                    label_map=lmap, 
+
+                    # slice operations {'noop', 'prior', 'posterior', }
+                    slice_policy=slice_policy, 
+                    slice_predicate=kargs.get('slice_predicate', None), 
+                    cutpoint=kargs.get('cutpoint', None),
+                    inclusive=True)
+
+ 
+
+———
+
+sorted(candidates, key=lambda x: x[1], reverse=False)[:raren]
+
+deriveLCS 
+   header = ['length', 'lcs', 'n_uniq', 'count', 'df', ] # Pathway.header_global_lcs # ['length', 'lcs', 'count', 'n_uniq', 'df', ] 
+
+   round(cnt/(nDoc+0.0), 3)
+
+   topN analysis: say top 200 most frequent 
+   but rare patterns could be worth investigating as well 
+   bottomN 
+
+analyzeMCS(D, T, lcs_set, **kargs)  make_color_time <- False
+
+(lcsmap, lcsmapInvFreq, lcsColorMap, lcsTimeMap)
+
+
+
+index: 
+        lcsmap: lcs -> document IDs 
+    frequency: 
+        lcsmapInvFreq: document ID -> {(LCS, freq)}
+    inverted_index: 
+        lcsmapInv: document ID -> {lcs_i}
+
+    color: 
+        lcsColorMap: document ID -> lcs -> {postiions_i}
+
+        lcsColorMap[i][lcs] = lcs_positions
+
+        # document ID -> {LCS -> LCS time indices} read for plot (xxxx0xx0x000xxxxx0 where 0 ... 0 ~> LCS)
+
+    time: 
+        lcsTimeMap: document ID -> {LCS -> list of timestamps (of codes in LCS)} 

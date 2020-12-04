@@ -1,0 +1,130 @@
+
+
+[‘Control’, ‘CKD Stage 5’, ‘CKD Stage 4’, ‘CKD Stage 3’, 
+ ‘CKD Stage 2’, ‘CKD Stage 1’]
+
+# also Quip 
+
+# save and load LSTM model? 
+  modelEvaluateBatch()
+
+# LSTM + session vectors … use small cohort to select models
+     <log> win2, ckd_visit2
+
+  a. lookback n sessions, n=10
+
+  b. bootstrap only when a session is < min session length
+     > t_model> min_visit_length:
+     > info> Found … short sessions
+     
+  c. configuration check 
+     model selection > optimal setting > n_units:
+
+  <result> 
+    a. statistics 
+         + avgL: 3.401748, max n_tokens_in_visit: 71, min: 1, std: 4.775765
+         + avgV: 90.685169, max n_visits_in_doc:   1082, min: 1, std: 114.666660
+           info> Found 198649 short sessions (< 10 tokens)
+           visitToDocment> size(V):2360 -> size(Dv):214017 (E[nVperDoc]=90.685169)
+
+
+# LSTM + session vectors  … objective: make it work
+
+  <params> 
+  Given max_visit_length = 100  # this is determined by statistics  
+        n_features = 100, window = 10 (5 by default), min_count = 2
+
+  sample_ratios = [0.1, 0.1, ] # how long does it take?
+  
+  n_timestamps = 100 # look back 100 sessions
+
+  ratios = [0.1, 0.1]  
+
+  <app> seqClassify.t_deep_classify() | win: 1
+
+
+# fit (+evaluate)
+        param_grid = {'n_units': [50, 100, 200, 300, 500, 600, 1000, ], 'dropout_rate': [0.2, 0.3, 0.5, 0.6, ]}
+        
+        NNS.epochs_ms = kargs.get('epochs_ms', 100)  # previously: 100
+        NNS.batch_size_ms = kargs.get('batch_size_ms', 32)
+        NNS.patience_ms = 100
+        
+        test_ratio = 0.3
+        targetMetric = kargs.get('target_metric', 'loss')
+        score_map = {0:'loss', 1:'acc', 2:'auc_roc'}
+        score_index = 1  # score_index: 0/loss, 1/accuracy, 2/auc
+
+# after being adjusted by class weights 
+
+t=2
+<params> nlv:50, epochs=80, batch_size=32, epochs_ms=60, batch_size_ms=32,
+
+t=1
+<params> nlv:50, epochs=80, batch_size=32, epochs_ms=60, batch_size_ms=32,
+     better! 
+
+  + min | class=CKD Stage 4, auc=0.703914
+  + max | class=CKD Stage 5, auc=0.962954
+  + micro auc=0.865840 | macro auc=0.802151
+  + Ranked AUC scores: 
+    + class=CKD Stage 4, auc=0.703914
+    + class=CKD Stage 3, auc=0.751766
+    + class=CKD Stage 1, auc=0.774523
+    + class=CKD Stage 2, auc=0.783688
+    + class=Others, auc=0.830159
+    + class=CKD Stage 5, auc=0.962954
+  => [('CKD Stage 4', 0.70391414141414144), ('CKD Stage 3', 0.75176600441501107), ('CKD Stage 1', 0.77452326468344768), ('CKD Stage 2', 0.78368762586708429), ('Others', 0.8301587301587301), ('CKD Stage 5', 0.9629535722334911)]
+output> saving performance to:
+
+
+
+<params>   … overfit
+nlv:50, epochs=250, batch_size=32, epochs_ms=100, batch_size_ms=32,
+
+<results>
+  + min | class=CKD Stage 4, auc=0.639048
+  + max | class=CKD Stage 5, auc=0.958063
+  + micro auc=0.873583 | macro auc=0.784358
+  + Ranked AUC scores: 
+    + class=CKD Stage 4, auc=0.639048
+    + class=CKD Stage 3, auc=0.723854
+    + class=CKD Stage 2, auc=0.749089
+    + class=CKD Stage 1, auc=0.792703
+    + class=Others, auc=0.834397
+    + class=CKD Stage 5, auc=0.958063
+  => [('CKD Stage 4', 0.63904830224772835), ('CKD Stage 3', 0.72385366135366136), ('CKD Stage 2', 0.74908872639965085), ('CKD Stage 1', 0.79270298047276477), ('Others', 0.83439737727547225), ('CKD Stage 5', 0.95806344461052972)]
+
+
+
+
+# statistics of the doucments
+
+  + avgL: 2.926463, max number of tokens in a visit: 104
+  + avgV: 36.274221, max number of visits in a doc:   1925
+
+
+visitToDocment> size(V):389350 -> size(Dv):14123368 (E[nVperDoc]=36.274221)
+prepareDocumentInput> nDocTotal: 389350 =?= nDocEff: 14123368 | doc stats: (m: 2.000000, med:2.000000, std:0.000000), window: 10
+      + size of vocab: 20654206
+... nDocTotal: 389350 <? nDocEff: 14123368
+    + computing document vectors nD:389350 => nDEff: 14123368 ..
+
+
+
+[(75, 0.05, 0.0010916580978565912, 5.0418387197114845), (100, 0.05, 0.0012729315406390009, 4.2824563006672278), (75, 0.1, 0.0013961293162117298, 4.4376375562494568), (100, 0.2, 0.0026946868325220578, 4.5983882259789288), (100, 0.1, 0.0045374611892949421, 4.3959305709148522), (75, 0.2, 0.0049605492635919849, 4.5970942498109153), (100, 0.3, 0.010515163275728916, 4.3693731430887723), 
+
+... under metric (accuracy), best score: 1.000000, gap: 0.297458
+... full ranking:
+[(75, 0.05, 1.0, 0.29745762711864399), (100, 0.05, 1.0, 0.28220338983050841), (75, 0.1, 1.0, 0.26963276836158201), (100, 0.2, 1.0, 0.26638418079096038), (100, 0.1, 0.99981840193704596, 0.27241727199354315), (75, 0.2, 0.9995157384987895, 0.28920500403551264), (50, 0.2, 0.99854721549636805, 0.26676755447941891), (100, 0.3, 0.99727602902682566, 0.27382970134320983), 
+
+... under metric (auc), best score: 0.964040, gap: 0.000071
+... full ranking:
+[(100, 0.05, 0.96404019585533229, 7.1203828916344136e-05), (100, 0.1, 0.96307780377512686, 9.9053067291299257e-05), (75, 0.1, 0.96253993949936323, 8.9079266695102355e-05), (100, 0.2, 0.96244640113655078, 0.00011425968906020323), (75, 0.05, 0.9613244990315335, 8.2602190143776788e-05), (100, 0.3, 0.95995626440925685, 0.00010349159764111437), (75, 0.2, 0.95952300821897762, 0.00011741355410310739), 
+
+
+
+clf_name='lstm', epochs=250, batch_size=32, 
+            epochs_ms=80, batch_size_ms=32,   # other params: patience_ms, 
+            last_n_visits=tset['last_n_visits']
+

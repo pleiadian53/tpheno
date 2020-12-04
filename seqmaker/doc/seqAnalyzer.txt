@@ -1,0 +1,151 @@
+
+### Operations ### 
+
+* main operations 
+
+read, sr.read 
+analyze 
+vectorize 
+test_similarity
+
+
+### Log ### 
+
+# PTSD temporal sequence symbol/code lookup
+<log> test/log/ptsd_lookup.log
+
+
+### Input ### 
+
+# temporal documents
+  + no timestamps 
+    data-exp/condition_drug_seq.dat*
+  + with timestamps 
+    data-exp/condition_drug_timed_seq.dat
+
+>>> 09.17 
+
+
+
+# deidentification 
+
+<log> 
+../test/log/deidentify_diag_only.log
+../test/log/deidentify_mixed.log
+
+<todo> 
+   + panda plotting utility
+
+# simplify the coding sequence prior to training w2v model
+
++ loadModel() 
+
+
+
+>>> 07.17 
+
+# PTSD temporal sequence symbol/code lookup
+<log> test/log/ptsd_lookup.log
+t_lookup(**kargs)
+   analyze_diag
+   analyze_drug  
+   
+<check> 
+    io> saving diagnosis code lookup table (dim=
+
+>>> 04.17 
+
+[todo] test_similarity() 
+    save similarity matrices 
+
+[verify] test_similarity
+  + Result> Among 77 modeled diag codes, n_topn_match=73(ratio: 0.948052), n_first_match=72 (0.935065)
+      => plot w2v dimension VS accuracy  //[todo]
+
+[new] t_word2vec(): test new w2v implimentations 
+
+
+
+
+
+# verify ( )
+  + requested sequence pattern type:
+
+
+
+[new] classifier
+      evaluate.py
+        drawROC() 
+
+[new] test_similarity() …. 2
+      : after vector() or 
+              loadModel (if in learning mode)
+        want to know if the learned w2v is useful
+
+      + verity ( ) 
+          Result> Among … modeled diag codes, n_topn_matc … 
+
+>>> 03.17 
+
+[new] test_similarity() … 1
+
+
+[new] vectorize 
+
+    w2v_method = 'sg'   # skip-gram (sg) or CBOW (cbow)
+    sg = 1 if w2v_method.startswith('s') else 0 
+
+    doc_basename = 'condition_drug'
+    doctype = 'w2v'
+    descriptor = kargs.get('meta', doc_basename)
+
+    
+   ofile = kargs.get('output_file', '%s-%s_f%dw%d.%s' % (descriptor, w2v_method, n_features, window, doctype))
+    
+
+### Output ### 
+
+analyze() 
+  data-exp/token_lookup.csv 
+
+
+### Reference ### 
+
+1. CCS: disease to ICD9 
+https://www.hcup-us.ahrq.gov/toolssoftware/ccs/AppendixASingleDX.txt
+
+
+
+### Output ### 
+
+(*) a map from internal symbols to their corresponding non-coded portion of the source value
+
+condition_drug-noncoded.csv
+condition-noncoded.csv
+drug-noncoded.csv
+
+
+### LOG ### 
+
+# word vector dim
+    + loadModel
+        test> word vector dim:
+        (87241, 100)
+
+# similarity test 
+
+Result> Seq type: random > Among 77 modeled diag codes, n_topn_match=72(ratio: 0.935065), n_first_match=70 (0.909091)
+
+Result> Among 77 modeled diag codes, n_topn_match=73(ratio: 0.948052), n_first_match=72 (0.935065)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Number of documents: 432000
+Number of sentences: 15755982
+Number of unique tokens: 193017 # this may differ slightly
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+

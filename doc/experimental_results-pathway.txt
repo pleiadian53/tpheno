@@ -1,0 +1,144 @@
+  
+
+### using LCSs to predict CKD stages 
+
+a. feature selection first followed by classifier
+
+1) lasso (n_per_class=1000, threshold<-None)
+=> fset saved to: CKD/combined/tset-IDregular-pv-dm2-Rlcs-sorted-GCKD.c
+
+featureSelectLasso> size(total): 43405, size(selected): 5927 =?= requested: 10000
+
+data size: classification SGD
+
+multiClassEvaluateSparse> X (dim: (185072, 5927))
+  + label=CKD Stage 5 => N=19444
+  + label=CKD Stage 4 => N=7597
+  + label=CKD Stage 3 => N=46936
+  + label=CKD Stage 2 => N=99670
+  + label=CKD Stage 1 => N=11425
+
+use SGD classifier | penalty: elasticnet, loss: log
+  + class name: CKD Stage 1, mean_auc: 0.667926
+  + ROC curve of class CKD Stage 1 (area = 0.67)
+  + class name: CKD Stage 2, mean_auc: 0.620077
+  + ROC curve of class CKD Stage 2 (area = 0.62)
+  + class name: CKD Stage 3, mean_auc: 0.594872
+  + ROC curve of class CKD Stage 3 (area = 0.59)
+  + class name: CKD Stage 4, mean_auc: 0.624944
+  + ROC curve of class CKD Stage 4 (area = 0.62)
+  + class name: CKD Stage 5, mean_auc: 0.726908
+  + ROC curve of class CKD Stage 5 (area = 0.73)
+test_auc_cv_metrics> summary of AUCs vs classes ...
+  + min | class=CKD Stage 3, auc=0.594872
+  + max | class=CKD Stage 5, auc=0.726908
+
+
+2) lasso (n_per_class=2500, threshold<-0.2) + RForest
+   <debug> 
+          select_features> n_selected:
+
+           # number of features <> requested 
+             set n_iter = 3, 
+
+> full feature set X (dim: (389350, 43405)), y (dim: 389350)
+  using RForest … slow 7+ days now … 5.4.18
+
+> full data set + 10000 LCS features … ( )
+
+3) with or without feature selectoin 
+
+
+multiClassEvaluateSparse> X (dim: (185072, 16351))
+  + label=CKD Stage 5 => N=19444
+  + label=CKD Stage 4 => N=7597
+  + label=CKD Stage 3 => N=46936
+  + label=CKD Stage 2 => N=99670
+  + label=CKD Stage 1 => N=11425
+     => see log pathway_lcs_fs_16K.log (16K or so features)
+
+VS, use 10K features 
+
+multiClassEvaluateSparse> X (dim: (185072, 10000))
+  + label=CKD Stage 5 => N=19444
+  + label=CKD Stage 4 => N=7597
+  + label=CKD Stage 3 => N=46936
+  + label=CKD Stage 2 => N=99670
+  + label=CKD Stage 1 => N=11425
+     => see log pathway_lcs_fs_10K.log
+
+     a. random forest (100 trees) + 10K 
+          : pathway_lcs_fs-10K-rf.log
+     b. SGD + 10K? 
+
+
+VS use all features but SGD classifier 
+   id: FlcsAll-SGD
+     => see log pathway_lcs_fs_all_SGD.log (0.60 ~ 0.73)
+            : min class=Stage 3, auc=0.601958, max, class=Stage 5, auc=0.73550
+
+     => does it help if control is not dropped? not so 
+          pathway_lcs_fs_all_SGD-ctrl.log
+
+     => use random forest? 
+          use default setting doesn’t give better performance (IV: 0.57 ~ V: 0.72)
+          try 100 trees … ( )  <tag> Flcs10K-RF
+                5K 
+    		10K
+
+     => use SGD classifier (elasticnet)
+         a. 10K features 
+         b. 5K features
+
+4) select top 1000 or 10000 features in LASSO and plot their frequency distribution 
+   
+
+### MCS predicting CKD stages ### 
+
+<pretext> control data removed (n_classes = 5)
+
+I. 
+
+a. complete sequence 
+  
+   i) exclude control
+
+GBT 
+
+RF (n_estimators=1000): ckd_classify-rf-nt20.log
+
+
+b. prior only (v)  … no subsampling 
+    setting: 
+           + computing document vectors (nD:389350 + nDAug:0 -> nDTotal:389350) =>       			nDEff: 17794 ...
+	    + getDocVec> method: pv-dm2, model ID: prior
+
+    i) exclude control 
+         RF         
+            … seqClassifyTest-2 (log: ckd_classify_prior-rf.log), w1  
+         SGD      
+            … seqClassifyTest-1 (log: ckd_classify_prior.log), w2
+
+
+c. posterior only ( ) … ( ): ckd_classify_segment
+      include control 
+      exclude control 
+
+      i) exclude control (n_classes=5)
+          RF (VI: 0.72 ~ V: 0.91) 
+          SGD          … w0
+
+      ii) include control
+
+
+II. sparse representation 
+
+a. complete sequence 
+
+b. prior only? 
+
+c. posterior only? 
+
+
+
+

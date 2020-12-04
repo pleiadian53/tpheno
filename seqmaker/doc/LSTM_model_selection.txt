@@ -1,0 +1,338 @@
+### also see LSTM_model_selection_results at seqmaker/data/ 
+
+
+# LSTM + session vectors … use small cohort to select models
+     <log> win2, ckd_visit2
+
+  a. lookback n sessions, n=10
+
+  b. bootstrap only when a session is < min session length
+     > t_model> min_visit_length:
+     > info> Found … short sessions
+     
+  c. configuration check 
+     model selection > optimal setting > n_units:
+
+  <result> 
+    a. statistics 
+         + avgL: 3.401748, max n_tokens_in_visit: 71, min: 1, std: 4.775765
+         + avgV: 90.685169, max n_visits_in_doc:   1082, min: 1, std: 114.666660
+           info> Found 198649 short sessions (< 10 tokens)
+           visitToDocment> size(V):2360 -> size(Dv):214017 (E[nVperDoc]=90.685169)
+
+
+# LSTM + session vectors  … objective: make it work
+
+  <params> 
+  Given max_visit_length = 100  # this is determined by statistics  
+        n_features = 100, window = 10 (5 by default), min_count = 2
+
+  sample_ratios = [0.1, 0.1, ] # how long does it take?
+  
+  n_timestamps = 100 # look back 100 sessions
+
+  ratios = [0.1, 0.1]  
+
+  <app> seqClassify.t_deep_classify() | win: 1
+
+
+# fit (+evaluate)
+        param_grid = {'n_units': [50, 100, 200, 300, 500, 600, 1000, ], 'dropout_rate': [0.2, 0.3, 0.5, 0.6, ]}
+        
+        NNS.epochs_ms = kargs.get('epochs_ms', 100)  # previously: 100
+        NNS.batch_size_ms = kargs.get('batch_size_ms', 32)
+        NNS.patience_ms = 100
+        
+        test_ratio = 0.3
+        targetMetric = kargs.get('target_metric', 'loss')
+        score_map = {0:'loss', 1:'acc', 2:'auc_roc'}
+        score_index = 1  # score_index: 0/loss, 1/accuracy, 2/auc
+
+# after being adjusted by class weights 
+
+t=2
+<params> nlv:50, epochs=80, batch_size=32, epochs_ms=60, batch_size_ms=32,
+
+t=1
+<params> nlv:50, epochs=80, batch_size=32, epochs_ms=60, batch_size_ms=32,
+     better! 
+
+  + min | class=CKD Stage 4, auc=0.703914
+  + max | class=CKD Stage 5, auc=0.962954
+  + micro auc=0.865840 | macro auc=0.802151
+  + Ranked AUC scores: 
+    + class=CKD Stage 4, auc=0.703914
+    + class=CKD Stage 3, auc=0.751766
+    + class=CKD Stage 1, auc=0.774523
+    + class=CKD Stage 2, auc=0.783688
+    + class=Others, auc=0.830159
+    + class=CKD Stage 5, auc=0.962954
+  => [('CKD Stage 4', 0.70391414141414144), ('CKD Stage 3', 0.75176600441501107), ('CKD Stage 1', 0.77452326468344768), ('CKD Stage 2', 0.78368762586708429), ('Others', 0.8301587301587301), ('CKD Stage 5', 0.9629535722334911)]
+output> saving performance to:
+
+
+
+<params>   … overfit
+nlv:50, epochs=250, batch_size=32, epochs_ms=100, batch_size_ms=32,
+
+<results>
+  + min | class=CKD Stage 4, auc=0.639048
+  + max | class=CKD Stage 5, auc=0.958063
+  + micro auc=0.873583 | macro auc=0.784358
+  + Ranked AUC scores: 
+    + class=CKD Stage 4, auc=0.639048
+    + class=CKD Stage 3, auc=0.723854
+    + class=CKD Stage 2, auc=0.749089
+    + class=CKD Stage 1, auc=0.792703
+    + class=Others, auc=0.834397
+    + class=CKD Stage 5, auc=0.958063
+  => [('CKD Stage 4', 0.63904830224772835), ('CKD Stage 3', 0.72385366135366136), ('CKD Stage 2', 0.74908872639965085), ('CKD Stage 1', 0.79270298047276477), ('Others', 0.83439737727547225), ('CKD Stage 5', 0.95806344461052972)]
+
+
+—— 
+
+d_classify> best combo:(10, 0.3, 0.596045197740113)
+
+# model selection: try the following
+
+1. set test_size to 0.5 (increase from 0.3 to 0.5) because overfitting seems to be the main problem … () 
+
+2. try max auc (instead of minimizing loss)
+
+3. how does it compare to classifical models? 
+
+
+
+<results>
+
+# model selection on large cohort 
+
+   a) min. loss
+     d_classify> best combo (n_unit, rate => score): (3, 0.5, 1.0199129962270561)
+result> min(label: CKD Stage 1, score: 0.557464)
+        max(label: CKD Stage 5, score: 0.872367)
+
+   : small number of LSTM units and -> 0.5 drop out
+   : min is too low and not consistent with small cohort 
+   : 
+
+   b) max AUC
+
+# model selection on small experimental CKD cohort 
+
+  a) minimizing loss, stable? 
+
+
+  b) max AUC, stable across multiple runs? yes 
+     + (IV: 0.69, V:0.93) 
+     + best model: (n_units: 100, r: 0.1) 
+
+     + decrease dropout_rate? 
+     
+  
+# solvig overfitting problem () 
+
+  > class weights are important! 
+    
+
+
+  a. too many epochs?  assuming minimizing loss
+     epochs = 20
+
+   [('CKD Stage 4', 0.68064574314574311), ('CKD Stage 3', 0.70802207130730055), ('CKD Stage 1', 0.7374523264683448), ('CKD Stage 2', 0.75351094589012801), ('Others', 0.7751368347502039), ('CKD Stage 5', 0.92673797279060444)]
+
+     epochs = 40
+     
+  b. d2v: window=10, n_iter=20  …. retraining d2v model (b -> c -> …) 
+     
+  c. look at 20 visits (since average 90+) + ep:60 
+     => observed better accuracy 
+        [('CKD Stage 4', 0.69823232323232332), ('CKD Stage 1', 0.71250953470633105), ('CKD Stage 3', 0.71707696661007347), ('CKD Stage 2', 0.7402552229396292), ('Others', 0.78802841504599974), ('CKD Stage 5', 0.9322683006893534)] 
+         + micro: 0.86
+         + acc: 0.61
+
+      => try longer visits 
+         n_visits <- 30   ep 60(v), 100(v) 
+
+         ep60 
+         [('CKD Stage 4', 0.57765151515151514), ('CKD Stage 1', 0.6990846681922197), ('CKD Stage 3', 0.74750990379173732), ('CKD Stage 2', 0.7655492510706754), ('Others', 0.82600442529404905), ('CKD Stage 5', 0.93161177371703696)]
+
+         ep 100: 
+         [('CKD Stage 4', 0.73710317460317465), ('CKD Stage 3', 0.75888511601584607), ('CKD Stage 2', 0.76317963433987701), ('CKD Stage 1', 0.78093058733790999), ('Others', 0.8304413648538489), ('CKD Stage 5', 0.94932888353940981)]
+
+         but could be very unstable 
+
+	 [('CKD Stage 4', 0.52886002886002881), ('CKD Stage 3', 0.74322297679683069), ('CKD Stage 2', 0.77083197460814368), ('Others', 0.81848142541050428), ('CKD Stage 1', 0.82608695652173914), ('CKD Stage 5', 0.94462377357114202)]
+      
+
+
+      => increase number of (last) visits
+
+     n_last_visits (increments of 10) vs performance 
+        then look into prediagnostic sequences (first appear -> end how many visits?) 
+        as a validation 
+     <nlv: 40> ep: 100
+        : highest accuracy still at 0.62, not much improvement over nlv=20 
+        : overfitting 
+           => epochs:70, epochs_ms:60
+                : but this doesn’t fit very well, acc < 0.7
+
+                 [('CKD Stage 3', 0.73647895387025819), ('CKD Stage 4', 0.75600384245917385), ('CKD Stage 2', 0.75926965055892959), ('CKD Stage 1', 0.75993918234035363), ('Others', 0.83149791803637962), ('CKD Stage 5', 0.95422941067112854)]
+
+           => epochs:100, epochs_ms:80
+[('CKD Stage 3', 0.73595041322314048), ('CKD Stage 4', 0.76557040082219929), ('CKD Stage 2', 0.76618198874296439), ('Others', 0.79934647412248339), ('CKD Stage 1', 0.86717884828349945), ('CKD Stage 5', 0.95094623858393745)]
+
+      <nlv: 90> 
+
+[('CKD Stage 1', 0.7099567099567099), ('CKD Stage 3', 0.71166365539591037), ('CKD Stage 2', 0.76776509129450288), ('Others', 0.80428922367877553), ('CKD Stage 4', 0.82637046861184793), ('CKD Stage 5', 0.94564545470601746)]
+
+
+      <hint> check ranked performance scores 
+   	    <check> result> performance scores ...
+
+        => add i) acc, ii) gap to modelEvaluate()  …. ( )
+
+     <nlv: 90> ep: 100
+
+
+
+result> minimizing loss 
+
+[('CKD Stage 1', 0.65560640732265452), ('CKD Stage 4', 0.70093795093795097), ('CKD Stage 3', 0.72358517260894173), ('CKD Stage 2', 0.76797321680906094), ('Others', 0.78126237335507165), ('CKD Stage 5', 0.91721377247693037)]
+
+
+result> max accuracy
+   + seems to help
+
+[('CKD Stage 4', 0.70147907647907648), ('CKD Stage 3', 0.70284380305602712), ('CKD Stage 1', 0.71914569031273845), ('CKD Stage 2', 0.74869018891715045), ('Others', 0.78100617212064749), ('CKD Stage 5', 0.91765601634022687)]
+
+[('CKD Stage 4', 0.66332972582972582), ('Others', 0.70697566088272978), ('CKD Stage 3', 0.72184493491794011), ('CKD Stage 2', 0.73658666492749836), ('CKD Stage 1', 0.74607170099160935), ('CKD Stage 5', 0.93177590546011591)]   … ep:100
+
+     
+
+result> min(label: CKD Stage 3, score: 0.685512)
+        max(label: CKD Stage 5, score: 0.932318)
+result> best combo (n_unit, rate => score): (100, 0.2, 0.98791433087850022)
+
+
+  : test_size <- 0.5   => opt auc
+result> min(label: CKD Stage 4, score: 0.691558)
+        max(label: CKD Stage 5, score: 0.931867)
+result> best combo (n_unit, rate => score): (100, 0.1, 0.9884555758055994)
+        (4: 0.69, 3: 0.69, 2: 0.75, o: 0.79, 1:0.80, 5:0.93)
+
+  => 1a the performance is stable (stage 3 ~ stage 4 and may reverse their order; both are at around 0.70)
+
+  + stable? 
+ #1: [('CKD Stage 4', 0.69561688311688319), ('CKD Stage 3', 0.71447368421052637), ('CKD Stage 2', 0.75813604643579202), ('Others', 0.78374286712472341), ('CKD Stage 1', 0.79626239511823038), ('CKD Stage 5', 0.92354196301564728)]
+
+ #2: 
+
+[('CKD Stage 3', 0.69712082625919636), ('CKD Stage 4', 0.73358585858585856), ('CKD Stage 2', 0.76835365986217086), ('Others', 0.77568417375101906), ('CKD Stage 1', 0.80892448512585802), ('CKD Stage 5', 0.93078655578655578)]
+
+  
+
+###  large cohort deosb’t work well … ()
+ 1) fitting just epochs=50, still got low accuracy even though auc is high
+    => epochs=100  … seqClassifierTest-1
+
+
+35043/35043 [==============================] - 67s - loss: 0.8815 - acc: 0.6493 - auc_roc: 0.9147
+
+ + Ranked AUC scores:
+    + class=CKD Stage 1, auc=0.557464
+    + class=CKD Stage 2, auc=0.704787
+    + class=CKD Stage 3, auc=0.770711
+    + class=Others, auc=0.806220
+    + class=CKD Stage 4, auc=0.822970
+    + class=CKD Stage 5, auc=0.872367
+
+
+
+### different params settings 
+
+
+<params> u_units=50, r_dropout=0.2 
+
+  + min | class=CKD Stage 3, auc=0.689870
+  + max | class=CKD Stage 5, auc=0.922972
+  + Ranked AUC scores: 
+    + class=CKD Stage 3, auc=0.689870
+    + class=CKD Stage 1, auc=0.736461
+    + class=CKD Stage 4, auc=0.742965
+    + class=CKD Stage 2, auc=0.748408
+    + class=Others, auc=0.781274
+    + class=CKD Stage 5, auc=0.922972
+
+
+<params> n_units=100, r_dropout=0.2, n_layer=1 n_classes=6
+   n_units=150, similar
+
+ + class name: CKD Stage 1, mean_auc: 0.795576
+  + ROC curve of class CKD Stage 1 (area = 0.80)
+  + class name: CKD Stage 2, mean_auc: 0.745619
+  + ROC curve of class CKD Stage 2 (area = 0.75)
+  + class name: CKD Stage 3, mean_auc: 0.723500
+  + ROC curve of class CKD Stage 3 (area = 0.72)
+  + class name: CKD Stage 4, mean_auc: 0.746392
+  + ROC curve of class CKD Stage 4 (area = 0.75)
+  + class name: CKD Stage 5, mean_auc: 0.932040
+  + ROC curve of class CKD Stage 5 (area = 0.93)
+  + class name: Others, mean_auc: 0.800099
+  + ROC curve of class Others (area = 0.80)
+test_auc_cv_metrics> summary of AUCs vs classes ...
+  + min | class=CKD Stage 3, auc=0.723500
+  + max | class=CKD Stage 5, auc=0.932040
+
+<params> n_units=100, r_dropout=0.5, n_layer=1 n_classes=6
+  + class name: CKD Stage 1, mean_auc: 0.824867
+  + ROC curve of class CKD Stage 1 (area = 0.82)
+  + class name: CKD Stage 2, mean_auc: 0.742717
+  + ROC curve of class CKD Stage 2 (area = 0.74)
+  + class name: CKD Stage 3, mean_auc: 0.727271
+  + ROC curve of class CKD Stage 3 (area = 0.73)
+  + class name: CKD Stage 4, mean_auc: 0.677219
+  + ROC curve of class CKD Stage 4 (area = 0.68)
+  + class name: CKD Stage 5, mean_auc: 0.929369
+  + ROC curve of class CKD Stage 5 (area = 0.93)
+  + class name: Others, mean_auc: 0.786712
+  + ROC curve of class Others (area = 0.79)
+test_auc_cv_metrics> summary of AUCs vs classes ...
+  + min | class=CKD Stage 4, auc=0.677219
+  + max | class=CKD Stage 5, auc=0.929369
+
+
+<params> n_units=100, r_dropout=0.2, n_layer=1 n_classes=6
+  + class name: CKD Stage 1, mean_auc: 0.782151
+  + ROC curve of class CKD Stage 1 (area = 0.78)
+  + class name: CKD Stage 2, mean_auc: 0.749870
+  + ROC curve of class CKD Stage 2 (area = 0.75)
+  + class name: CKD Stage 3, mean_auc: 0.703127
+  + ROC curve of class CKD Stage 3 (area = 0.70)
+  + class name: CKD Stage 4, mean_auc: 0.701028
+  + ROC curve of class CKD Stage 4 (area = 0.70)
+  + class name: CKD Stage 5, mean_auc: 0.930891
+  + ROC curve of class CKD Stage 5 (area = 0.93)
+  + class name: Others, mean_auc: 0.772645
+  + ROC curve of class Others (area = 0.77)
+test_auc_cv_metrics> summary of AUCs vs classes ...
+  + min | class=CKD Stage 4, auc=0.701028
+  + max | class=CKD Stage 5, auc=0.930891
+
+<params> n_units=1000, r_dropout=0.2, n_layer=1 n_classes=6
+
++ class name: CKD Stage 1, mean_auc: 0.755835
+  + ROC curve of class CKD Stage 1 (area = 0.76)
+  + class name: CKD Stage 2, mean_auc: 0.750087
+  + ROC curve of class CKD Stage 2 (area = 0.75)
+  + class name: CKD Stage 3, mean_auc: 0.724038
+  + ROC curve of class CKD Stage 3 (area = 0.72)
+  + class name: CKD Stage 4, mean_auc: 0.660895
+  + ROC curve of class CKD Stage 4 (area = 0.66)
+  + class name: CKD Stage 5, mean_auc: 0.936846
+  + ROC curve of class CKD Stage 5 (area = 0.94)
+  + class name: Others, mean_auc: 0.761739
+  + ROC curve of class Others (area = 0.76)
+test_auc_cv_metrics> summary of AUCs vs classes ...
+  + min | class=CKD Stage 4, auc=0.660895
+  + max | class=CKD Stage 5, auc=0.936846

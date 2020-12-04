@@ -1,0 +1,32 @@
+
+tpheno.cluster 
+  analyzer.py     // [note] analyzer exists in different packages
+
+  generic version of the cluster analysis code ported from seqmaker.seqCluster.py
+
+
+### Daily ### 
+
+>>> 05.17
+
+
+            idx = ts_subset[TSet.index_field] # these indices correspond to the positions of the original documents
+            Ds = sa.select(docs=D0, idx=idx)
+            Xs, ys = evaluate.transform(ts_subset, standardize_=standardize_) # default: minmax
+            n_doc_subset = len(Ds)
+            labels = list(set(ys))
+            n_labels_subset = len(labels)
+
+
+### Experiments ### 
+
+### Log ### 
+
+
+
+
+
+# CRF
+
+# logistic vs GDA 
+

@@ -1,0 +1,169 @@
+
+tpheno.seqmaker.pathwayAnalyzer
+  <relaetd> seqCluster.py
+
+
+### Log ### 
+
+(*) cluster frequency distribution (comparison with global) 
+    <log> test/log/ptsd_analysis.log
+    
+    + identify representative n-grams for clusters
+    <log> test/log/ptsd_subtyping.log  < pathwayAnalyzer 
+
+(*) LCS Time Series 
+    + generate timed med coding sequence (cohort=PTSD) 
+      <log> test/log/ptsd_timed_docs.log
+
+### Daily ### 
+
+
+
+
+>>> 11.17 
+
+<pipeline> 
+   findRepresentativeNGrams() 
+   rankClusterMotifs
+   selectMembersByDocLength(
+ 
+   
+# Label documents by LCSs (say topn_lcs=20 => 21 classes) 
+  + try different labelings (e.g. most frequent diagnostic codes, topn=20)
+    : this should be easier than LCSs 
+  + different labeling => different columns in the training set
+      labeling.labelDocByDataFrame
+      labeling.labelDocByFreq
+      seqAnalyzer.t_labeling(**kargs)
+      
+      + input source data (.csv)
+          cohort='CKD' 
+             tpheno/data-exp/condition_drug_labeled_seq-CKD.csv
+      + training data (d2v .csv) 
+          cohort='CKD' 
+             tpheno/seqmaker/data/CKD/combined
+                tset-n0-IDdiag-pv-dm2-GCKD.csv  
+                tset-n0-IDregular-pv-dm2-GCKD.csv
+             
+             <note> their sizes may not be the same
+                     
+      <workflow> 
+         1. create labeled sequence via labeling (or seqAnalyzer.t_labeling)
+            e.g. cohort='CKD' : save it to => 
+                     tpheno/data-exp/condition_drug_labeled_seq-CKD.csv
+            now, have df containing 
+                sequence|timestamp|label
+                
+                sequence|timestamp|label|label_lcs|label_freq
+                
+         2. use the dataframe from step 1) as a source 
+            => train d2v    seqClassify.makeTSet
+               => insert or change labels 
+                     seqClassify.markTSet
+                     pathAnalyzer.markTSet
+                     pathwayLabeler.py  
+            => save tset-* file to local cohort directory 
+               e.g.  tpheno/seqmaker/data/CKD/combined           
+                    
+   
+# LCS over entire, cohort-specific document set 
+   analyzeLCS() 
+      + use the pairings of longer documents to extract LCSs ... ( ) 
+ 
+
+>>> 08.17 
+
+
+# Repetition-free longest common subsequence ()
+  pClusterPathwayLCS() 
+      removeDups = True
+      maxNPairs = 100000
+      lcsMinLength = 2
+      
+  <output> 
+     <plot> saving ngrams_freq-figure to 
+            seqmaker/data/PTSD/cluster_ngrams/plot/ngrams_freq-CID0-COPdiagnosis-total-prior.pdf
+            
+            
+     seqmaker/data/PTSD/pathway/pathway_cluster-lcs-frequent-GPTSD-COPdiagnosis-total-prior.csv       
+
+# select persons with longer document for computing LCS ... ()
+  pClusterPathwayLCS() 
+     long-chain LCS tends to be just continous diagnoses of the same code 
+
+
+# workflow for identifying import segments within clusters 
+
+1. identify representative cluster motifs
+   rank ~ tfidf scores, local frequencies
+        
+2. compute LCS
+   <params>
+        pClusterPathwayLCS
+                maxNPairs = 1000
+                lcsSep = sep
+                lcsMinLength = 5  # only see LCS of length >= 5; set to None to prevent from filtering
+
+        <check> 
+        	1. Derive longest common subsequences (LCSs) (ctype:
+        
+            + [cluster %d] choose %d out of %d ngram combos' % (cid, n_total_pairs, npt)
+        	+ LCS sorted by length =>         //sorted ngrams ~ lengths 
+        	+ tokenized LCS: 
+
+(f) verify input sequence data set
+vInputData(**kargs)
+
+
+# four questions ... ( ) 
+  + generate timed med coding sequence 
+      <log> test/log/ptsd_timed_docs.log
+
+>>> 07.17
+
+<log> test/log/ptsd_subtyping.log  < pathwayAnalyzer 
+
+      
+# LCS statistics    ... (v)
+   <file> pathway_cluster_derived-lcs_stats 
+# LCS: n_patients, number of patients that share a given LCS   ... (v) 
+   <file> writes back to 
+          pathway_cluster_derived-lcs
+# cluster n-grams recall  ... (v)
+   exclusiveness of n-grams within a single cluster
+   <func> 
+
+* organize cluster level motifs further 
+  pathwayAnalyzer.dMotifs
+
+
+* analyze pathway file 
+    + sort ~ cluster_freq (the lower the better => only occurs exclusively)
+
+* frequency distributions of n-grams across clusters (and how they're compared to the global scope)   
+  + common n-grams in different clusters are similar or very different? 
+  + top 10 global n-grams, what are their distribution across clusters? 
+     + use say 4-grams as an example to show their cluster-wise distribution
+  + among all the n-grams (with 'n' fixed), which subset has smallest ratio between the cluster freq and global freq 
+       => more unique to the cluster? 
+          + <file> smallRatioNGrams-
+          
+          
+  + foreach cluster, rank n-grams ~ tf-idf, plot their distribution of cluster occurrences 
+    => if they appear almost always exclusively in one cluster, then that's an indicator for 
+       defining a subtype
+       
+
+  <log> test/log/ptsd_analysis.log
+  <exec> evalClusterDistribution
+     <check> 
+     
+         io> saving selected cluster motif dataframe of dim: 
+         
+         io> after curating cluster motifs (cid:
+
+
+
+
+
+

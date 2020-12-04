@@ -1,0 +1,19 @@
+
+SPRINT
+  demo
+    demo_pandas.py 
+
+
+# commonly used operations (via template functions t_)
+
+join/merge, apply
+
+
+
+('diagnosis', 'prior', 'partial'), 
+                       ('medication', 'prior', 'partial'), 
+                       ('mixed', 'prior', 'partial'),
+                       ('diagnosis', 'noop', 'partial'), 
+                       ('medication', 'noop', 'partial')
+
+

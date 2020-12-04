@@ -1,0 +1,31 @@
+
+hierarchical clustering its visualization 
+
+
+# option 
+color threshold: 
+For brevity, let tt be the color_threshold. Colors all the descendent links below a cluster node kk the same color if kk is the first node below the cut threshold tt. All links connecting nodes with distances greater than or equal to the threshold are colored blue. If tt is less than or equal to zero, all nodes are colored blue. If color_threshold is None or ‘default’, corresponding with MATLAB(TM) behavior, the threshold is set to 0.7*max(Z[:,2]).
+
+
+
+# Using Scipy 
+
+# Using Plotly 
+
+
+
+### Daily ### 
+
+>>> 03.17 
+
+verify: max cutoff distance for determining number of clusters 
+   + fancy_dendrogram> final max_d
+
+
+
+Reference
+————
+
+1. https://joernhees.de/blog/2015/08/26/scipy-hierarchical-clustering-and-dendrogram-tutorial/
+
+2. https://plot.ly/python/dendrogram/

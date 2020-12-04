@@ -1,0 +1,57 @@
+tpheno.seqmaker
+  seqMaker2.py 
+
+
+
+### Output ### 
+
+condition_occurrence.csv
+drug_exposure.csv
+
+
+(*) temporal documents 
+   + coding sequence 
+       condition_drug_seq.dat
+   + coding sequence with timestamps
+       condition_drug_timed_seq.dat
+       
+       
+       
+### Daily ### 
+
+
+>>> 09.17 
+
+(*) sequencing all patients 
+    make_seq 
+       <check> 
+           verify> multi-tokens where first one is a medication code:
+           verify> complex medication code: 
+           
+           io> Saved doc (n_doc=
+           
+           warning> empty after condense:
+           
+           ** intervals (e.g. DB being partitioned into 10 parts) 
+           + Found %d unique IDs (%s, min=%s, max=%s)
+
+       <todo> 
+          check  d, e? without dates? 
+             verify> visit: 2013-03-10|729.5,2013-03-10|401.9,2013-03-10|782.3,2013-03-10|NDC:00113018771,2013-03-10|MULTUM:5968,2013-03-10|MULTUM:13325,2013-03-10|MULTUM:11007,2013-03-10|vitamins-c,d,e,,2013-03-10|NDC:00093517120,2013-03-10|NDC:00093208001,2013-03-10|NDC:00143126701
+
+
+>>> 08.17
+
+(*) Sequencing the whole documents 
+    <exec> seqMaker2.py 
+    <log> test/log/sequencing.log 
+    
+    <check> 
+    
+    
+    
+        test> consolidated dataframe (condition+drug)
+
+
+# query ICD-10
+

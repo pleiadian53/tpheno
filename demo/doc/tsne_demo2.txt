@@ -1,0 +1,26 @@
+tsne_demo2.py (run tSNE using tsne library)
+
+
+>>> 03.17 
+
+[test]
+t_tsne2()
+   np.asarray(X, dtype=np.float64)
+
+t_tsne_mnist() 
+
+
+[error]
+Building tree...
+ - point 0 of 20000
+Segmentation fault: 11
+
+
+### Reference ### 
+
+1. MNIST tutorial 
+
+http://nbviewer.jupyter.org/github/danielfrg/py_tsne/blob/master/examples/mnist.ipynb
+
+2. tsne download 
+   https://pypi.python.org/pypi/tsne

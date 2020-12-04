@@ -1,0 +1,28 @@
+t_lcs> searching LCSs for label=CKD Stage 3a | N=215
+t_lcs> searching LCSs for label=Unknown | N=411
+t_lcs> searching LCSs for label=CKD Stage 3b | N=135
+t_lcs> searching LCSs for label=ESRD on dialysis | N=41
+t_lcs> searching LCSs for label=CKD G1-control | N=87
+t_lcs> searching LCSs for label=CKD G1A1-control | N=108
+t_lcs> searching LCSs for label=CKD Stage 5 | N=31
+t_lcs> searching LCSs for label=CKD Stage 4 | N=56
+t_lcs> searching LCSs for label=ESRD after transplant | N=686
+t_lcs> searching LCSs for label=CKD Stage 2 | N=528
+t_lcs> searching LCSs for label=CKD Stage 1 | N=62
+  + [stage]: CKD Stage 3a => [n_comorbid_cases]: 31
+  + [stage]: Unknown => [n_comorbid_cases]: 145
+  + [stage]: CKD Stage 3b => [n_comorbid_cases]: 29
+  + [stage]: ESRD on dialysis => [n_comorbid_cases]: 9
+  + [stage]: CKD G1-control => [n_comorbid_cases]: 0
+  + [stage]: CKD G1A1-control => [n_comorbid_cases]: 2
+  + [stage]: CKD Stage 5 => [n_comorbid_cases]: 11
+  + [stage]: CKD Stage 4 => [n_comorbid_cases]: 22
+  + [stage]: ESRD after transplant => [n_comorbid_cases]: 389
+  + [stage]: CKD Stage 2 => [n_comorbid_cases]: 39
+  + [stage]: CKD Stage 1 => [n_comorbid_cases]: 6
+
+
+
+
+./tpheno/data-in
+

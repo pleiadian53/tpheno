@@ -1,0 +1,18 @@
+tphento.seqmaker
+   analyzer.py
+
+
+pickle.dump(fDict, open(fpath, "wb" ))
+pickle.load(open(fp, "rb" ))
+
+### Daily ### 
+
+[new] toStrings
+      + verify> reconstructed doc
+
+np.average(data, axis=1, weights=[1./4, 3./4])
+
+    idf = vectorizer.idf_
+    # [log] {u'this': 1.0, u'very': 1.0, u'is': 1.0, u'strange': 1.4054651081081644, u'nice': 1.4054651081081644}
+    adict = dict(zip(vectorizer.get_feature_names(), idf))  
+    print adict 

@@ -1,0 +1,177 @@
+# Progress (12.5) 
+  val_loss diverges? 
+    - RNN, exploding gradient? gradient clipping
+
+  <test> 
+     n_lookback = 10 vs 5     … | win1, win2
+     <app> seqClassifyTest-VisitN
+           => still observing a large gap between training error and vaildation error 
+              acc ok but val_acc very low … why?  ( ) 
+              auc ok  val_auc ok … small ok … (v) 
+     	      large gap between loss (< 1) and val_loss (13)
+                 : loss continues to grow … diverge? … ( )
+           => 
+
+     2. reduce batch_size to 1 <app> seqClassifyTest-VisitN 
+
+     3. modelEvaluateBatch() … revised 
+        seqDNN.lstmEvaluateBatch()  … similar to modelEvaluateBatch() but focuses on LSTM
+
+        observe gap between training and validation errors
+
+     4. findRepresentativeLCSPerStage() 
+        <app> pathAnalysisTest … ( )
+
+     5. Create LCS feature set & training data 
+        <app> pathAnalysis … ( )    //   win1, <log> ckd_lcs_classify
+
+
+# Progress (12) 
+  <paper> CKD staging and progression
+
+  - pathway analysis 
+    enriched/rare pattern contrast 
+      - separate diagnostic and medication to highlight the signal … sorting by contrast ( )
+
+      - find out how many of the MCSs contain explicit diagnostic codes that indicate CKD stages () 
+        : this is a small portion   … ( )
+
+# Progress 12
+  - make subsampling routine … (v)
+
+  <app> seqClassify  … <log> win1, ckd_visit 
+
+  - train d2v model (new data matching sunny’s CKD phenotyped data, 081718)
+  - 
+  
+
+
+### new sequence generated  … 08.18.18 
+  <log> makeMCSFromSource> n_anno: 672858 =?= n_sequenced: 657590
+   	   > some patients do not have data! 
+
+# Progress 11+ => see Quip
+
+  evalMulticlassROCCurve(
+  evalMulticlassPredisionRecall(
+
+# Progress (11) 
+  <app> cohort
+        generate a new cohort that aligns with annotated data CdwCkdCohort_20170817.csv 
+        … 8277:win7  <log> ckd_cohort.log
+
+        - work on the final experimentation (also see experimental_results-all)
+
+
+# Progress (10)  … subsumed by (11)
+
+  latest timestamp, does it match with the annotated cohort? … ( )
+
+  document analysis … ( )
+
+  a. use seqClasify to subset big CKD cohort … ( ) 
+  b. => ids to select documents => pathway analysis … ( )
+
+  => 
+  slice D by time sliceByTime() according to 20170817
+     <code> seqTransform.segmentDocumentByTime()  … (v) 
+    
+     <add> seqClassifyTest1  … ckd_visit2 | win: 2
+   	   > + number of active documents: 
+     
+
+# Progress (9) 
+  + takes long in pathway analysis 
+    => sample subset 
+  + re-write loadTSet()
+     - sample subset at this level 
+
+  + subset documents in accordance with loadTSet() => docIDs
+
+# Progress (8) 
+  drop diagnostic codes (perhaps signals lie in the diagnostic codes)  … ( )
+  redo table I
+
+# Progress (7) … ( ) future work
+  use MCS vectors to form clusters   … ( )
+  compare to the 6 classes (silver standards), how much do they correlate?  
+
+# Progress (6) (see Quip)  … ( )
+
++ table I 
+     <window 6> ckd_classic.log,  … ( )  n = 
+
+     <win 3> ckd_path.log, pathAnalysis
+
++ add modelEvaluateBatch() for classicial models 
+  <check> 
+     modelEvaluate, modelEvaluateBatch
+     runCVMulticlass
+
++ test> Input document > sample lengths:  
+
+
+# LCS frequencies comparisons … ( )
+  + find top 10  1-4 grams  (not very useful) 
+  + find most enriched LCS at stage N, and see their occurrences in the other stages -N
+    > scatter plot … ( ) 
+      + top 10 stage 1, how often do they occur in other stages? horizontal bars
+   
+# sparse vs dense
+  + small 
+  + large 
+
+# 
+
+
++ model selection (classical) 
+    errors (not supporting multiclass => set general_evaluation to True) 
+       use seqClassifyTest2-SmallCKD to verify this … ( ) 
+
+    error estimate in classical setting … ( )    //refer to dnn_utils.py
+
+    model selection using large CKD cohort => this goes into the fomral analysis 
+       use seqClassify    <log> ckd_classic.log 
+
+
+    model selection in sparse repretnation 
+           <log> ckd_classic_sparse.log 
+
+
+# AMIA podium 
+  + set tSegment and tNNet to False, file: seqClassifyTest-2-SmallCKD.py
+
+
+# With the small CKD cohort, did not observe improvements in performance by concatenating visit vectors 
+  + fix predit_proba problem   … (v) 
+ 
+
+
+# write a little everyday, i am a good writer
+   + deep patient paper as template 
+   + find diagnosis sequences evidence 
+
+   + stateful vs non-stateful
+
+
+# how long does it take to use entire CKD cohort to train the model? i.e. sample_ratios = [0.9, 0.1, ] 
+  <check> ckd_visit2.log
+
+# modify runCVROCMulticlass and runROCMulticlass to include acc, val_acc,
+   <related> multiClassEvaluate.roc_train_test_split   … ( )    7.5.18
+
+   <add> accuracy to res … ( )
+         cross_val_score vs cross_val_predict
+         => GridSearchCV()
+
+
+# deep learning model persistence … ()   … debugging 
+   + test loading .. ( )  
+
+# create encoded documents and learn vectors and see if the results remain consistent … () 
+    tsHandler.save_mcs(D, T, L, index=0, docIDs=docIDs, meta=user_file_descriptor, sampledIDs=sampledIDs)  # D has included augmented if provided
+
+
+# re-compute d2v model and classify … ( )   //starting 6/19:10p … 
+   n_iter <- 20, window <- 10    … seqClassify  … ckd_visit.log
+

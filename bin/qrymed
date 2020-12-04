@@ -1,0 +1,57 @@
+#!/usr/bin/perl
+
+use HTTP::Request::Common qw(POST);
+use LWP::UserAgent;
+$|=1;
+
+$listmode = "OFF";
+$list = "";
+$comm1 = "";
+#@listing = ();
+
+#This tests for whether there exists STDIN (ie whether soemting is being piped)
+use POSIX 'isatty';
+if (isatty(*STDIN) == 0 ) {
+ $listmode = "ON";
+ $num = scalar @ARGV;
+ $comm1 = $ARGV[0];
+ if ( $ARGV[1] ) { $comm1 = "$comm1 $ARGV[1]"; }
+ if ( $ARGV[2] ) { $comm1 = "$comm1 $ARGV[2]"; }
+ $list = "";
+# @listing = ();
+ while (<STDIN>) {
+#   chomp $_;
+#    push (@listing,$_);
+   if ($list ne "") { $list = "$list\|$_"; }
+   if ($list eq "") { $list = $_; }
+   }
+ }
+
+if (isatty(*STDIN) != 0 ) {
+ $num = scalar @ARGV;
+ $comm1 = $ARGV[0];
+ if ( $ARGV[1] ) { $comm1 = "$comm1 $ARGV[1]"; }
+ if ( $ARGV[2] ) { $comm1 = "$comm1 $ARGV[2]"; }
+ }
+
+
+
+
+my %params = ();
+
+$params{'T1'} = "qrymed $comm1";
+$params{'LM'} = $listmode;
+$params{'LS'} = $list;
+
+my $userAgent = new LWP::UserAgent;
+
+my $res = $userAgent->request(
+POST 'http://capito.nyp.org/projects/med_editors/Qrymed_go3.cgi',
+\%params
+);
+
+if ($res->is_success) {
+ my $returned_content = $res->content;
+ print $returned_content;
+}
+

@@ -1,0 +1,7 @@
+seqSampling.py … (1)
+  : sample subset
+
+
+>>> 03. 17
+
+read_representative

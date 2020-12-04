@@ -1,0 +1,23 @@
+
+
+
+
+
+### Daily ### 
+
+
+
+
+[test] 20 clusters 
+ [1] 0.0000000 0.1774101 0.1315463 0.1350715 0.1317964 0.1405982 0.1377571 0.1353531 0.1272317
+[10] 0.1294213 0.1257695 0.1197695 0.1155536 0.1179000 0.1150578 0.1193679 0.1178771 0.1148454
+[19] 0.1145844 0.1160242
+=> 
+> pc$nc
+[1] 2      # 2 clusters maximize the average silhouette width
+
+Warning message:
+In daisy(data, metric = "gower") :
+  binary variable(s) 1, 4, 8, 10, 13, 14, 16, 17, 18, 19, 20, 28 treated as interval scaled  // they have binary values 0 and 1
+=> list(asymm=c(1, 4, 8, 10, 13, 14, 16, 17, 18, 19, 20, 28))
+

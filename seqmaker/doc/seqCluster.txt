@@ -1,0 +1,850 @@
+[todo], ( ), [test]
+
+tpheno.seqmaker.seqCluster 
+   <related> pathAnalyzer
+
+
+[top]
+Cophenetic Correlation Coefficient
+
+# determine number of clusters 
+demo.hc.retrieve_cluster() 
+
+# heat map (group first by diabetes type I, II, …etc) => observe block structures 
+  > similarity matrix 
+
+seqCluster.cluster_kmeans()
+  evaluation of clusters: optimal number of clusters? elbow, silhouette score, etc. 
+
+HC order: pdist (distance matrix) => define linkage => plot dendrogram
+
+affinity propagation 
+dirichlet process mixture model
+
+
+
+[references] see bottom
+[files] related files memo
+   + demo/data_generator.py
+
+
+
+
+[verify]
+1. d2v model 
+   vectorize2> computing model 
+
+[memo]
+* wanted log files are prefixed with summary 
+   e.g. ../test/log/summary_cluster1000.log
+
+* create new w2v and d2v for different sequence pattern types (seq_ptype: regular, random, diag, etc.) 
+  use t_doc2vec1()
+
+* subsetting training data 
+  ref-1: http://stats.stackexchange.com/questions/95797/how-to-split-the-dataset-for-cross-validation-learning-curve-and-final-evaluat
+
+* parallel test file 
+  seqClusterTest
+    test()
+
+* clustering
+   + distance metrics 
+      http://scikit-learn.org/stable/modules/generated/sklearn.neighbors.DistanceMetric.html
+   + k-nn graph 
+      http://scikit-learn.org/stable/modules/generated/sklearn.neighbors.kneighbors_graph.html#sklearn.neighbors.kneighbors_graph
+
+   + affinity propagation 
+     http://stackoverflow.com/questions/33187354/affinity-propagation-preferences-initialization
+
+# compute pairwise distance 
+  from scipy.spatial import distance
+  distance.cdist(coords, coords, 'euclidean')
+  a.flatten()
+
+# get off-diag elements 
+  http://stackoverflow.com/questions/35746806/how-to-get-indices-of-non-diagonal-elements-of-a-numpy-array
+
+
+[error] 
+findfont: Font family [u'sans-serif'] not found. Falling back to DejaVu Sans
+
+
+tpheno.seqmaker.seqCluster 
+   <related> pathAnalyzer
+
+
+
+[check]
+  io> 
+  output> 
+  result> 
+
+[Q] differences between the seq file in data-in and data-exa 
+     > seqReader
+
+[variable] 
+   load_w2v
+   w2v_method
+   d2v_method
+   composition, seq_compo 
+   cohort_name
+
+[policy] file naming convention 
+   # pathway analysis 
+     'T%s-O%s-C%s-S%s-D2V%s' % (tset_type, order_type, cluster_method, seq_ptype, d2v_method)
+
+   # cluster analysis 
+     identifier = 'C%s-P%s-D2V%s-G%s' % (cluster_method, seq_ptype, d2v_method, cohort_name)
+
+   # training set 
+     identifier = '%s-%s-%s' % (seq_ptype, w2v_method, d2v_method)
+     'tset_nC%s_ID%s-G%s.csv' % (n_classes, identifier, cohort_name)
+   # input sequence file 
+     ifile = kargs.get('ifile', '%s_seq-%s.dat' % (seq_compo, cohort_name) if cohort_name is not None else '%s_seq.dat' % seq_compo) 
+
+   # other output files (e.g. df(label, sequence))   … (alpha1)
+         doc_basename = seq_compo if seq_ptype.startswith('reg') else '%s-%s' % (seq_compo, seq_ptype) 
+    if cohort_name is not None: 
+        doc_basename = '%s-%s' % (doc_basename, cohort_name)
+
+   # w2v, d2v files 
+     (alpha1) above
+        + 
+     ofile = kargs.get('output_file', '%s-%s_f%dw%d.%s' % (descriptor, doc2vec_method, n_features, window, doctype))
+
+
+(*) import logs 
+    a. pathway analysis 
+       test/log/ptsd_pathway.log
+
+
+===========================================
+
+### 10.17 
+
+# vary document embedding methods 
+
+# classification 
+
+classify
+
+# labeling 
+
+   makeTSet.test> labels:
+   
+   labeling.TDocTag.canonicalize()
+      makeD2VLabels> doc tag examples:
+
+# debugging d2v 
+
+<data> 
+   cohort=CKD
+      <dir> tpheno/data-exp/condition_drug_labeled_seq-CKD.csv
+
+<function> evalSubgroups 
+
+
+<chain> sa: seqAnalyzer
+   evalSubgroups ->          //just one possible app
+   
+     *analyze_pathway_batch -> analyze_pathway -> data_matrix~
+   
+       ~data_matrix -> loadTset <exists?> 
+           	                        (N) -> makeTset <labeled?>
+            	                                        (Y) -> make_tset_labeled: 
+               	     -> sa.loadModel   // w2v
+                  	  	 analyze -> docTokens      // names of codes (e.g. 250.00: diabetes)
+                    	 makeWordVec | vectorize
+                         	: w2v, d2v, LSTM, ... etc.     // options
+                         		<pv-dm?> 
+                             		-> makeD2VLabels 
+                             		
+<chain> make doc vec 
+   loadModel 
+      makeWordVec 
+         vectorize
+
+   vector
+      getDocVec -> evalDocVec
+      
+<check>
+     + vector 
+         getDocVecModel> Info: Applying d2v-based complex model 
+     
+     + seqCluster.make_tset
+         print('stats> n_docs: %d, n_classes: %d | cohort: %s, composition: %s' % (nDoc, n_classes, cohort_name, seq_compo))     
+      
+<todo> load_tset 
+     + should be able to use the training set to identify number of classes
+
+                     
+                                      
+
+<check> seqAnalyzer.vectorize
+    + vector> computing w2v model (w2v (sg
+    
+    >> tf-idf scores all identical for CKD! 
+       + verify> example maps
+       
+       
+
+### 09.17 
+
+<module> vector 
+
+# computing vectors 
+evalWordVec(docs, **kargs)
+evalDocVec(docs, **kargs)
+
+# wrapper of evalVec
+
+### 08.17 
+
+# debugging d2v
+    
+
+<check> 
+    params> n_features:100, window:7, min_count:2 | w2v:sg | seq_ptype:regular, read_mode:doc | test_model:True, lookup? True
+
+    input> temporal doc file: condition_drug_seq-CKD.dat
+
+    + status> creating training set (n_classes:1, cohort:CKD, id:regular-sg-tfidfavg)
+
+<check> divide by zero error
+    
+    + getTfidfAvgFeatureVecs> n_features: 
+
+
+### 07.17 - 
+
+# pathway analysis ... (4) 
+  <check> 
+      n-grams (min_freq_global: 
+
+
+### 06.17 - 
+
+# make_tset_labeled() for diabetes cohorts 
+  > seqCluster.phenotypeDoc
+  
+  > print('info> Found %d n-grams (min_freq_global: %d, min_freq_local: %d)
+
+# pathway analysis ... (3)
+  + cleaned up training set and redo whole thing
+  + <output> seqmaker/data/PTSD
+      > No training set found at /phi/proj/poc7002/tpheno/seqmaker/data/PTSD/tset_nC1_IDregular-sg-tfidfavg-GPTSD.csv
+      
+  + make_tset()  ... (v) 
+      + loadModel()
+          > params> n_features:
+      > io> saving (one class, d2v method=
+      
+  + eval_cluster_motif ... (v) 
+  
+  
+  
+# continue on pathway analysis  ... (2)
+
+  <log> 
+     info> Found 207026 n-grams (with min_n: 1 & min_freq: 2)
+     info> Found 90890 n-grams (with min_n: 1 & min_freq_global: 3)
+     info> Found 90890 n-grams (min_freq_global: 3, min_freq_local: 3)
+     
+
+  <io> 
+     data> saving sequences (size: 5000) to /phi/proj/poc7002/tpheno/data-exp/condition_drug_seq-PTSD.csv
+
+  <check> 
+     # source (input coding sequences) 
+     input> opening source document file at /phi/proj/poc7002/tpheno/data-exp/condition_drug_seq-PTSD.dat
+  
+     info> Found 1858639 n-grams (min_freq_global: 1, min_freq_local: 3)   //1.8M+ 
+     analyze> number of (unique) tokens: 27636 //2.7K+ 
+     
+     
+     # global motifs 
+       verify> saving motif dataframe of dim:
+     
+     # cluster motifs 
+       verify> saving cluster motif dataframe 
+     
+     # why cluster motif counts seem to always identical to global counts? 
+        
+        : test> Cluster #%s| n_eq=%d, n_uneq=%d
+             test> Cluster #9| n_eq=595690, n_uneq=41252
+     
+     
+     status> Cluster motifs completed.
+
+     //word vectors
+     w2v> Computed word vectors (params> nf:100, w:7, mcnt:2, cohort:PTSD, test_model?True)
+     
+     test> word vector dim: (17734, 100)    //17734 < 27636
+
+	 # of condition tokens: 8191
+	 # of prescription tokens: 18809
+	 # of other tokens: 636
+     
+     io> saved test_similarity result dataframe (dim=(9, 4)) to:
+            ... tpheno/seqmaker/data/PTSD/similarity_diag_regular_f100-PTSD.csv    
+            
+            309.81|296.30 311 296.20|?|?
+    		311|309.81 296.20 296.30|?|?
+			300|296.30 401.9 493.90|?|?
+			401.9|300 493.90 311|?|?        (v) 
+			296.30|296.20 309.81 311|?|?   (vvv) 
+			789.00|300 493.90 784.0|?|?   (v)
+			296.20|296.30 309.81 311|?|?     (vvv) 
+			784.0|300 789.00 311|?|?        (v) 
+			493.90|300 789.00 401.9|?|?    (v) 
+     
+     
+     verify> top global %d-gram frequencies(topn=%s):\n%s\n
+     verify> top cluster %d-gram frequencies(cid=%s, topn=%s):\n%s\n
+     
+     compare> Cluster (%s): size of local %d <? global motifs: %d (ratio: %f)
+     compare> Complement: size of local %d, focused: %d, global motifs: %d
+     
+     
+     
+
+     
+     data_matrix -> loadModel
+     	io> read in 
+     	lookup> Completed token lookup (bypass_lookup? %s, cohort:%s)
+     	w2v> Computed word vectors (params> nf
+     	
+     	     io> saved test_similarity result dataframe (dim=%s) to:\n%s\n
+     	     
+    
+     //cluster result 
+     output> saving clusters (id -> cluster id) to 
+     
+     	   
+     --- 
+  
+     cluster_analysis()
+        > io> loading training set (n_classes=
+  
+     data_matrix() <- cluster_analysis() 
+         > sa.read()
+             > io> Reading (processed) temporal doc (read_mode=%s, ptype=%s, cohort=%s) from %s
+             > Creating new temporal document (params> read_mode:
+             
+             
+        io> Reading (processed) temporal doc (read_mode=doc, ptype=regular, cohort=PTSD)
+        	Number of documents: 5000
+			Number of unique tokens: 27636     
+            
+            verify> n_features: 27636 (n_tokens: 27636), n_stop_words: 0
+			verify> example maps:
+					{'371.9': 9.5173931714189042, '041.00': 9.5173931714189042  
+		io> Reading (processed) temporal doc (read_mode=doc, ptype=diag, cohort=PTSD)
+		    Number of documents: 5000
+			Number of unique tokens: 8190
+			
+		io> Reading (processed) temporal doc (read_mode=doc, ptype=med, cohort=PTSD) from 
+        	Number of documents: 5000
+			Number of unique tokens: 18809 
+			
+   
+     analyze_pathway() 
+         params> n_clusters:
+         info> total num of global ngrams found:
+         
+     compare_motif()
+        lookup> Not a cluster complement?
+        
+     motif_stats2(): 
+        + Found 207026 n-grams (with min_n: 1 & min_freq: 2)
+        
+        > info> final global motif examples
+        > test> topn_motifs:      //last few
+        
+
+
+[module]
+# added seqmaker.outlier
+
+<precond> pathway analysis on PTSD completed 
+# verify the results: compare clusters
+   <log> test/log/ptsd_pathway.log  (see pathway_ptsd.log for older issues)
+   
+   <exec> pathwayAnalyzer.py (need to run seqCluster.py to get motifs files first) 
+         <input> tpheno/seqmaker/data/PTSD/motifs-* 
+         
+   <analysis> also see Temporal Phenotyping: PTSD (quip doc) 
+       + example cluster motif file 
+            motifs-CIDL9-1-COPmixed-part-prior-Ckmeans-Sregular-D2Vtfidfavg.csv
+          
+
+### 05.17 - 
+
+<log> 
+    test/log/ptsd_pathway.log  (see pathway_ptsd.log for older issues)
+
+(*) outputdir should dep. on cohort  ... <io> 
+    seqparams.get_basedir(cohort=cohort_name)
+       + general (local) outputdir: os.path.join(os.getcwd(), 'data')
+
+[input] *** 
+  + source input sequences (that depends on cohort)
+        /phi/proj/poc7002/tpheno/data-exp/condition_drug_seq-PTSD.dat
+             Number of documents: 5000
+             Number of unique tokens: 27636
+        
+  + model file 
+  		w2v:  /phi/proj/poc7002/tpheno/data-exp/condition_drug-GPTSD-sg_f100w7.w2v
+  		
+  + cluster analysis 
+    ++ training set 
+         tpheno/seqmaker/data/<cohort>/tset_nC1_IDregular-sg-tfidfavg-G<cohort>.csv  
+         e.g.
+            tpheno/seqmaker/data/PTSD/tset_nC1_IDregular-sg-tfidfavg-GPTSD.csv  		
+  		
+  + saving motif dataframe of dim: (160, 5) 
+      tpheno/seqmaker/data/motifs-CIDL0-1-COPpartial-total-diagnosis-Ckmeans-Sregular-D2Vtfidfavg.csv
+  		
+
+[suite]
+make_tset()
+  + loadModel()
+      > input> temporal doc file    … io
+      > loadModel> read in
+      > word vector dim:
+      > saving (one class, d2v method     … io 
+      
+load_tset() <- data_matrix (<- analyze_pathway)
+  + training set naming 
+      > 'tset_nC%s_ID%s-G%s.csv' % (n_classes, identifier, cohort_name)
+
+  <log> test/log/ptsd_pathway.log 
+
+  + analyze_pathway
+      > params> ctype:
+
+  + analyze_pathway_batch
+      <loop> cluster_method, otype, ctype, ptype
+      
+      
+  () best k
+  (x) <error> could not load tset @ /phi/proj/poc7002/tpheno/seqmaker/data/PTSD/tset_nC2_IDregular-sg-tfidfavg-GPTSD.csv 
+         $ precond> loadModel complete.   
+         $ status> attempt loading pre-computed data first
+             : tpheno/seqmaker/data/PTSD/tset_nC1_IDregular-sg-tfidfavg-GPTSD.csv
+
+
+[new] analyze_pathway_loop()
+[new] analyze_pathway() <- t_pathway() but focus on a specific parameter set only 
+      (otype, ctype, ptype)
+      
+      otype: partial, total 
+      ctype: ('diagnosis', 'medication', 'mixed',)
+      ptype: ('prior', 'noop', 'posterior', ) 
+
+      !!! need to pass ‘class_label_names’ to map from class labels to meanings
+
+[todo] given a list of composition, create its string regr for file naming
+
+[todo] generic function w2v => d2v
+    > seqmaker.analyzer 
+      analyzer.getFeatureVecs(docs, model, n_features, **kargs)    
+
+[new] make_tset, make_tset_labeled
+
+[coding] add cohort, cohort_name, ctrl_cohort_name to the module 
+  + test_similarity
+     + t_pathway
+     + cluster_analysis
+
+     
+       ++ t_preclassify_weighted     //training data
+    	    > labeling training data? labeling = kargs.get('labeling', True)  # [operation] apply labeling?
+          
+  > identifier 
+    identifier = 'CMOP%s-%s-%s-%s-S%s-D2V%s' % (ctype, mtype, otype, ptype, seq_ptype, d2v_method)
+
+      + cluster analysis 
+           identifier = '%s-%s-%s' % (cluster_method, seq_ptype, d2v_method)
+
+
+[log] dialogistic and medication pathway analysis, motifs, n-grams,
+   ../test/log/summary-pathway.log 
+
+[reference] 
+https://nlp.stanford.edu/IR-book/html/htmledition/evaluation-of-clustering-1.html
+
+### 04.17 ### 
+
+[purity]
+0    16      0  1.000000
+1    30      0  0.822454
+2    20      1  1.000000
+3    36      1  0.992740
+4    27      1  0.989496
+5    23      1  0.989285
+6    44      1  0.989233
+
+type-1 top cluster 
+   motifs-Cdiagnosis-L0-CID16-kmeans-Sregular-D2Vtfidf.csv
+
+type-2 top cluster 
+   motifs-Cdiagnosis-L1-CID20-kmeans-Sregular-D2Vtfidf.csv
+
+# treatment pathway 
+  motifs-Cmedication-L1-CID22-kmeans-Sregular-D2Vtfidfavg.csv
+
+[patterns]
+   + (diagnosis, type-1)
+     V20.2 Routine infant or child health check
+     V58.67 Long-term (current) use of insulin
+
+     V20.2 V58.67|1|4|0.25
+     250.01 V20.2 V58.67|1|2|0.5
+
+
+[note] duplicate codes can still occur in the coding sequence for the same patent 
+       e.g. same code appearing in two consecutive visits
+
+[result] motifs 
+   stats> size of global_motifs: 9944182, size of focused_motifs: 0
+
+[module] cluster_analysis() 
+      + kmeans returns less clusters (13 vs 50)
+        > run_cluster_analysis> requested 
+
+      + <new> introduce MiniBatchKMeans
+
+[error]
+   + lookup> Not a cluster complement? fcnt: 89 + ccnt: 0 = 89 != gcnt: 101??
+
+[new] t_pathway
+      + cluster distribution analysis (pure or mixed?) … (x) 
+             
+      + full global vs prior global 
+        > eval_motif> input D | 
+
+      + verify global motifs 
+        > stats> size of global_motifs (v)
+      + number of docs
+        > params> ctype:
+      > status> iterating over all clusters
+
+      > verify> ngram_cidx
+
+      > io> saving tfidf stats (dim:
+
+      > new identifier
+        identifier = 'T%s-O%s-C%s-S%s-D2V%s' % (tset_type, order_type, cluster_method, seq_ptype, d2v_method)
+
+      + eval_motif
+         identifier = 'CMOP%s-%s-%s-%s-C%s-S%s-D2V%s' % (ctype, mtype, otype, ptype, cluster_method, seq_ptype, d2v_method)      
+      + eval_cluster_motif
+         identifier = 'CIDL%s-%s-COP%s-%s-%s-C%s-S%s-D2V%s' % (mtype, label, ctype, otype, ptype, cluster_method, seq_ptype, d2v_method) 
+         
+
+[run] pathway-t1.log, pathway-t2.log
+      test_similarity()
+         (v) save only cluster IDs
+
+[todo] predict probability of observing a code given history ( )
+
+
+# DBSCAN 
+
+eps : float, optional
+The maximum distance between two samples for them to be considered as in the same neighborhood.
+min_samples : int, optional
+The number of samples (or total weight) in a neighborhood for a point to be considered as a core point. This includes the point itself.
+
+[debug] 
+Random Doc #4:
+['780.4', '780.6', '294.1', '280.9', 'unknown', 'unknown', 'V62.89', 'V65.40', 'unknown', 'V62.81', 'unknown', 'V61.20', 'unknown', 'unknown', 'unknown', 'V65.40', 'V72.9', 'V62.89', 'unknown', 'V65.40', '783.0', 'unknown', 'V72.9', 'unknown', 'V72.9', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', '781.9', 'unknown', 'unknown', 'unknown', '789.00', 'unknown', 'unknown', 'unknown', 'V62.89', 'V62.89', 'V62.89', '290.10', 'unknown', 'V62.89', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'V62.89', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', '780.2', 'unknown', '780.2', 'V62.89', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 'unknown', 
+
+* test_similarity() 
+  1. use the entire document (and its vector) as the basis for clustering 
+       => can analyze the pre-diagnosis directly
+
+  2. use segments of documents for clustering  
+
+[plot] cluster_kmeans => cluster_analysis() # which includes other clustering algorithms
+       + output> saving cluster distribution to
+
+[log] classifying result
+      + seqCluster 
+          …/test/log/summary_classify_1.log
+
+      + Sample Size:
+          	+ size of type-1:      7550
+   		+ size of type-2:      108964
+
+[test] seqClusterTest => test/log/seqClusterTest-t1.log
+       run all tests including test_similarity() 
+
+[result] clustering 
+   + saving cluster map (cluster labels -> cids) to /phi/proj/poc7002/tpheno/data-exp/kmeans_map-regular.csv
+
+[todo] test_similarity() …. ( )
+     visualize training set heat map 
+     visualize similarity matrix heat map + graphics 
+     sampling subset of training data proportional class labels
+     
+     sa.test_similarity() 
+        save similarity matrices 
+
+
+[new] multi class fset added in t_preclassify_weighted()
+
+[new] build_data_matrix_ts() 
+      + verify 
+        stats> subset original docs from size of
+
+[visual]
+   + heat map for visualizing dataset (e.g. docs vs features)
+      + sort according to labels 
+      + heatmap: http://jjguy.com/heatmap/
+
+[ongoing] 
+   + new: t_preclassify_weighted()  => i/o: data (not the global one: DataExpRoot)
+             d2v based on averaging
+             d2v based on td-idf scores
+     + todo: multiclass … ( ) 
+
+[verify] 
+   + verify> total number of labels: 432000 > number of unique multilabels: 264632 > unique single labels: 6225
+   + verify> number of features ~ X: 100 >=? max of nonzeros: 100
+
+[result]
+number of d2v-modeled documents fewer than total number of docs 
+   + verify> number of docs (from model): 264922 =?= 432000
+
+[output] norm distribution, doc vectors are indeed different? 
+         + (random)  /phi/proj/poc7002/tpheno/seqmaker/test/d2v_nonzero_distribution-Prandom.tif
+         + (regular) /phi/proj/poc7002/tpheno/seqmaker/test/d2v_nonzero_distribution-Pregular.tif
+
+[new] seqmaker.evaluate()
+
+[new] seqCluster.mread() # filter un-modeled tokens from docs
+      next: 
+          td-idf weighting
+
+[log] classify-t1.log => summary_preclassify.log
+
+t_preclassify()
+  + verify 
+      phenotypeDoc> read  … doc of type
+      preclassify> number of docs (of type
+
+[result] 
+
+among all documents
+> unknown type (all false): 285411
+> type I  only:             7550
+> type II only:             108964 
+… see IO Section below
+
+
+[data] 
+# d2v model < vectorize2(…)
+  1. d2v model for REGULAR sequence 
+    + vectorize2> loading pre-computed model from /phi/proj/poc7002/tpheno/data-exp/condition_drug-PVDM_f100w7.d2v
+  2. d2v model for RANDOM sequence 
+    + vectorize2> loading pre-computed model from /phi/proj/poc7002/tpheno/data-exp/condition_drug-random-PVDM_f100w7.d2v
+
+# training data (on d2v)
+  1. byproduct> saving (PVDM-) doc2vec feature set (labeled) to /phi/proj/poc7002/tpheno/data-exp/fset_PVDM_432000_labeled.csv | feature set dim: (432000, 100)
+
+
+### 03.17 ###  
+
+# classification: diabetes type I and II 
+  diabetes
+  seqCluster.t_preclassify (make training data)
+            .t_classify 
+
+  + (log) classify-t1.log
+  + (new) phenotypeDoc(sequences=None, **kargs)  # identify type-1, type-2 diabetes
+    ++ verify
+       vector> computing w2v model
+       vectorize2> computing d2v model  
+       are modeled > ratio  //ratio of modeled code?
+
+       analyze> building lookup table ...  <<< this is time-consuming if activated
+
+  + create w2v and d2v for shuffled (randomized) sequences 
+    t_doc2vec1(load_doc2vec_model=False, seq_ptype='rand')
+
+[new] diabetes.phenotypeDoc
+      diabetes.phenotypeIndex (mapping disease labels type1, type2 to sequence indices)
+        => create training data for classification
+
+# verify data norm distribution 
+  : cluster2 => cluster_d2v-t1.log
+# verify: data distribution via t-SNE … () 
+  : tsne-t1.log
+
+
+# verify 
+   resulted n_cluster  > only 2! 
+   averaged kmeans-cluster size
+
+
+
+# hc, too many data
+  /home/poc7002/.local/anaconda2/lib/python2.7/site-packages/scipy/spatial/distance.py
+
+# from get_cluster_representative to hc
+    plotly   
+      
+       d = scs.distance.pdist(X)
+       Z = sch.linkage(d, method='complete')
+       P = sch.dendrogram(Z, orientation=self.orientation, labels=self.labels, no_plot=True)
+
+    pdist (distance matrix) => define linkage => plot dendrogram
+
+# new: seqSampling()
+
+
+seqReader.read() filter codes
+
+t_hc()  //op: hierarchical clustering
+labelDoc() 
+   : add shuffle sequence 
+   : add subsetting by code types (diag code only) 
+   : sample subsetting
+
+   => seqAnalyzer::vectorize() 
+         seq_ptype = 'regular' … 
+
+
+
+# add sequence pattern type seq_ptype  (v)( verify) 
+   affects: 
+      read
+      labelDoc 
+      loadModel 
+        vectorize, vectorize2  << only affects file naming
+
+
+# [test]
+  1. d2v_kmeans.log
+
+# hierarchical clustering … ()
+   t_hc()
+
+1. Ward variance minimization algorithm
+
+'ward' is one of the methods that can be used to calculate the distance between newly formed clusters. 'ward' causes linkage() to use the Ward variance minimization algorithm.
+
+
+( ) Cophenetic Correlation Coefficient
+This (very very briefly) compares (correlates) the actual pairwise distances of all your samples to those implied by the hierarchical clustering.
+
+The closer the value is to 1, the better the clustering preserves the original distances, which in our case is pretty close
+
+<todo>
+# partitioned-based clustering 
+
+evalNClusters()
+
+
+# [todo] 
+  pick important diagnostic cases (250)
+
+  lseqx = random.sample(labeled_seqx, 10) 
+
+( ) verify log 
+  …/test/log/doc2vec-t1.log
+
+
+# labeled sequences: key output 
+doc #3: LabelDoc(words=['583.81', '250.41', 'V45.81', '428.0', '250.51', '357.2', '362.01', '250.61', '403.91', '682.6', '599.0', '599.0', '536.3', '585', 'V45.81', '414.00', '250.51', '362.01', '369.4', '276.6', '403.91', '410.71', '61895', '63272', '61321', '62754', '62688', '61805', '61522', '61667', '60833', '62148', '61136', '63148', '66037', '63229', '62900', '62498', '66042', '60926', '62439', '67866', '62096', '62774', '62414', '61269', '69146', '60910', '62611', '62439', '63469', '61253', '62584', '63441', '61112', '62439', '62355', '62951', '61665', '60926', '63469', '60926', '33606', '33688', '49229', '47507', '44968', '41831', '29071', '28570', '29133', '48003'], tags=['362.01_599.0_250.51'])
+
+# model file naming 
+
+    doctype = 'd2v' 
+    doc_basename = 'condition_drug'
+    descriptor = kargs.get('meta', doc_basename)  # algorithm type: PV-DBOW, DM
+
+        ofile = kargs.get('output_file', '%s-%s_f%dw%d.%s' % (descriptor, doc2vec_method, n_features, window, doctype))
+
+
+# labelDoc 
+warning> Diag sequence only has 2 unique labels while topn=3 > dseq:
+682.3,V45.79
+
+
+# example: document vector (prior to clustering) 
+
+>>> docvec = d2v_model.docvecs[99]
+>>> docvec = d2v_model.docvecs['SENT_99']  # if string tag used in training
+>>> sims = d2v_model.docvecs.most_similar(99)
+>>> sims = d2v_model.docvecs.most_similar('SENT_99')
+>>> sims = d2v_model.docvecs.most_similar(docvec)
+
+
+outputdir/basedir: 
+   /phi/proj/poc7002/tpheno/data-exp
+      condition_drug_cluster.csv
+
+
+### IO ### 
+
+(*) source documents (seqReader)
+    + /phi/proj/poc7002/tpheno/data-exp/condition_drug_seq.dat
+
+(*) labeled data (multi labels, single labels, etc)
+    + (random) /phi/proj/poc7002/tpheno/data-exp/condition_drug-random_multilabel.csv
+    + (regular) /phi/proj/poc7002/tpheno/data-exp/condition_drug_multilabel.csv
+
+(*) d2v model
+      d2v model for REGULAR sequence 
+    + (regular) /phi/proj/poc7002/tpheno/data-exp/condition_drug-PVDM_f100w7.d2v
+      d2v model for RANDOM sequence 
+    + (random) /phi/proj/poc7002/tpheno/data-exp/condition_drug-random-PVDM_f100w7.d2v
+
+(*) classification training data 
+    + (binary) 
+       ++ (random) /phi/proj/poc7002/tpheno/seqmaker/data/fset_PVDM_432000_t1t2-Prandom.csv
+    + (3-class) /phi/proj/poc7002/tpheno/seqmaker/data/fset_PVDM_432000_t1t2t3-Prandom.csv
+
+
+### References ### <reference> 
+
+1. doc2vec library 
+   https://radimrehurek.com/gensim/models/doc2vec.html
+
+2. dendrogram 
+   https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.dendrogram.html
+
+3. linkage
+   https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
+
+4. cluster purity 
+   https://nlp.stanford.edu/IR-book/html/htmledition/evaluation-of-clustering-1.html
+
+### Log ### 
+
+(*) global motifs 
+    global_motifs: 9944182
+
+(*) cluster result
+    /phi/proj/poc7002/tpheno/data-exp/kmeans_map-regular.csv
+
+(*) General statistics 
+Number of documents: 432000
+Number of unique tokens: 200310
+
+(*) (surrogate) labeled documents 
+
+> unknown type (all false): 285411
+> type I  only:             7550
+> type II only:             108964
+> birth-related:            6838
+> type I + type II:         20544
+> type I + birth:           363
+> type II + birth:          1593
+> all types:                737
+
+

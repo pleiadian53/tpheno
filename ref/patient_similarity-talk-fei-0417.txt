@@ -1,0 +1,50 @@
+drug network
+
+patient 
+
+risk 
+
+gene sequence 
+
+fusion 
+
+feature-dependent similarity 
+  transitive? 
+  e.g. drug-drug interaction 
+       A ~ B 
+       B ~ C doesn’t mean A ~ C 
+
+label propagation 
+random walk 
+
+
+construct sim network 
+    compound 1  2  3  
+d1    1         0  0  … 
+d2
+d3 
+
+
+side effects
+drugs vs side effects 
+
+
+jaccard similarity 
+
+
+propagate the label 
+   spectral radius 
+
+bi-stochastic matrix 
+
+LLE: manifold learning, intrinsic dimension
+
+survey patient similarity JMIR recent paper 
+
+dynamic time warping
+
+
+LSTM training 
+  input features 
+  target features
+

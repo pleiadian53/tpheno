@@ -1,0 +1,24 @@
+tpheno.seqmaker
+   algorithms 
+
+
+
+['CKD G1-control' 'CKD G1A1-control' 'CKD Stage 1' 'CKD Stage 2'
+        'CKD Stage 3a' 'CKD Stage 3b' 'CKD Stage 4' 'CKD Stage 5'
+        'ESRD after transplant' 'ESRD on dialysis' 'Unknown']
+
+### Daily ### 
+
+
+https://stackoverflow.com/questions/41182372/what-is-the-difference-between-gensim-labeledsentence-and-taggeddocument
+
+
+### Reference ### 
+
+# find_ngrams
+  ref: http://locallyoptimal.com/blog/2013/01/20/elegant-n-gram-generation-in-python/
+
+# collections.Counter 
+  https://pymotw.com/2/collections/counter.html
+
+

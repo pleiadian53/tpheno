@@ -1,0 +1,27 @@
+seqmaker.tsne.py 
+first added: 2017-04-04 17:14:27
+
+[note] cluster also has a version of tsne.py 
+
+
+could you help me look into the career area again
+
+there’s an opening of staff scientist position in medical institute and i actually had another interview a while ago for an enginner position … but becasue it was an enginner position, i wasn’t that interested
+
+
+
+“Web Scale K-Means clustering” D. Sculley, Proceedings of the 19th international conference on World wide web (2010)
+
+
+DBSCAN is a density-based clustering algorithm 
+
+
+DBSCAN works differently than the first three clustering methods in that it is a density-based approach that defines clusters through identifying areas with closely packed data points, also known as core samples. The number of clusters in DBSCAN therefore is determined by the parameters that qualify core samples, each of which is guaranteed to have a minimum number of neighboring points that lie within a specified distance. 
+
+that define core samples including the minimum number of points within the distance of a score point
+
+its parameters [description and references by Po-Hsiang]. This led to six clusters. For all four of the clustering methods, the final conclusions were similar; hence only the spectral clustering case is presented here.
+
+
+
+More formally, we define a core sample as being a sample in the dataset such that there exist min_samples other samples within a distance of eps, which are defined as neighbors of the core sample. This tells us that the core sample is in a dense area of the vector space. A cluster is a set of core samples that can be built by recursively taking a core sample, finding all of its neighbors that are core samples, finding all of their neighbors that are core samples, and so on. A cluster also has a set of non-core samples, which are samples that are neighbors of a core sample in the cluster but are not themselves core samples. Intuitively, these samples are on the fringes of a cluster.

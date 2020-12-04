@@ -1,0 +1,7 @@
+
+
+
+>>> 05.17
+
+# create temporal documents 
+  <log> test/log/diabetes_tdoc.log

@@ -1,0 +1,30 @@
+
+
+### features ### 
+
+density estimate
+  t_gausian_kde 
+
+data generation | also search [data]
+  g_rv_data
+
+histogram + smoothing 
+  t_hist_smooth
+
+random variable and related features (e.g. parameter estimate, survival function ,etc.)
+  t_smooth_hist_expo
+
+
+
+>>> 03.17
+
+
+# plotting data distribution (=> plot_dist.py) 
+
+# random variable 
+  ref: https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.stats.expon.html
+
+# bumpy histogram 
+  ref: https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram.html
+
+If False, the result will contain the number of samples in each bin. If True, the result is the value of the probability density function at the bin, normalized such that the integral over the range is 1. Note that the sum of the histogram values will not be equal to 1 unless bins of unity width are chosen; it is not a probability mass function.

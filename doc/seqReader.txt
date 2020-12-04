@@ -1,0 +1,31 @@
+
+tpheno.seqmaker
+   seqReader.py
+
+
+### Daily ### 
+====
+
+
+
+
+>>> 04.29.17- 
+
+[new] document naming 
+   seq_compo: sequence compositions
+     e.g. condition_drug-  consists of diagnoses and medicaitons
+
+   => make_seq()
+
+[new] n-gram overlapping sequences 
+      + seqparams => added one more ptype
+      + read_doc
+           transform_by_ptype
+
+      + update seqTransform
+
+
+### I/O ### 
+
+(*) source documents (seqReader)
+    + /phi/proj/poc7002/tpheno/data-exp/condition_drug_seq.dat

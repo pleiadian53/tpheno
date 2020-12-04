@@ -1,0 +1,35 @@
+
+SPRINT
+  analyzer.py 
+
+
+
+### Daily ### 
+
+# 20 baseline features
+
+egfr
+
+
+>>> 04.17
+
+[todo] 
+merge()
+
+# given dataframe, find all columns of “binary type”
+  + ref-1: https://chrisalbon.com/python/pandas_list_unique_values_in_column.html
+    => unique values
+
+# [references] metric learning
+  + gower similarity coeffs 
+    + http://ecopy.readthedocs.io/en/latest/matrices.html
+
+  + clustering mixed type data in R: 
+    https://www.r-bloggers.com/clustering-mixed-data-types-in-r/
+
+
+df = pd.read_csv(fp, sep='|', header=0, index_col=False, error_bad_lines=True)
+  + names : array-like, default None
+  + usecols 
+df.to_csv(fp, sep='|', index=False, header=True)
+

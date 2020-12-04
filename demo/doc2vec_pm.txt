@@ -1,0 +1,9 @@
+
+
+Parameter choices below vary:
+
+
+1. 100-dimensional vectors, as the 400d vectors of the paper don't seem to offer much benefit on this task; similarly, frequent word subsampling seems to decrease sentiment-prediction accuracy, so it's left out
+2. cbow=0 means skip-gram which is equivalent to the paper's 'PV-DBOW' mode, matched in gensim with dm=0 added to that DBOW model are two DM models, one which averages context vectors (dm_mean) and one which concatenates them (dm_concat, resulting in a much larger, slower, more data-hungry model)
+
+3. a min_count=2 saves quite a bit of model memory, discarding only words that appear in a single doc (and are thus no more expressive than the unique-to-each doc vectors themselves)

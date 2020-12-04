@@ -1,0 +1,28 @@
+seqmaker.evaluate.py 
+
+first added: 2017-04-04 17:14:38
+
+
+### Daily ### 
+
+
+
+>>> 04.17
+
+[verify] 
+
+   + transform()
+      ++ test> X
+
+
+
+
+### I/O ### 
+
+
+### References ### 
+
+
+### Log ###
+
+

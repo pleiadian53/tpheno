@@ -1,0 +1,22 @@
+  + class name: CKD Stage 1, mean_auc: 0.840391
+  + ROC curve of class CKD Stage 1 (area = 0.84)
+  + class name: CKD Stage 2, mean_auc: 0.794120
+  + ROC curve of class CKD Stage 2 (area = 0.79)
+  + class name: CKD Stage 3, mean_auc: 0.756421
+  + ROC curve of class CKD Stage 3 (area = 0.76)
+  + class name: CKD Stage 4, mean_auc: 0.676094
+  + ROC curve of class CKD Stage 4 (area = 0.68)
+  + class name: CKD Stage 5, mean_auc: 0.956749
+  + ROC curve of class CKD Stage 5 (area = 0.96)
+  + class name: Others, mean_auc: 0.827004
+  + ROC curve of class Others (area = 0.83)
+test_auc_cv_metrics> summary of AUCs vs classes ...
+  + min | class=CKD Stage 4, auc=0.676094
+  + max | class=CKD Stage 5, auc=0.956749
+  + Ranked AUC scores: 
+    + class=CKD Stage 4, auc=0.676094
+    + class=CKD Stage 3, auc=0.756421
+    + class=CKD Stage 2, auc=0.794120
+    + class=Others, auc=0.827004
+    + class=CKD Stage 1, auc=0.840391
+    + class=CKD Stage 5, auc=0.956749

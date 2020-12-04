@@ -1,0 +1,54 @@
+tpheno.pattern
+   diabetes
+
+
+
+
+
+### Memo ### 
+
+# each disease-specific module should support transform()
+
+# major diabetes codes 
+
+249: secondary diabetes 
+250: type I ends with {1, 3}
+     type II ends with {0, 2}
+
+
+# 790 Nonspecific findings on examination of blood
+
+790.2 Abnormal glucose    … blood test 
+
+Specific code 790.21 Impaired fasting glucose convert 790.21 to ICD-10-CM
+Specific code 790.22 Impaired glucose tolerance test (oral) convert 790.22 to ICD-10-CM
+Specific code 790.29 Other abnormal glucose convert 790.29 to ICD-10-CM
+
+
+# 791 Nonspecific findings on examination of urine
+
+791.5  
+791.6
+
+
+### Daily ### 
+
+>>> 03.17 
+
+# data statistics 
+
+> unknown type (all false): 285411
+> type I  only:             7550
+> type II only:             108964
+> birth-related:            6838
+> type I + type II:         20544
+> type I + birth:           363
+> type II + birth:          1593
+> all types:                737
+
+### Log ### 
+
+
+
+
+

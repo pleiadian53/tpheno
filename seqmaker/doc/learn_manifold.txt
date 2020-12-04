@@ -1,0 +1,45 @@
+    
+
+### Reference ### 
+
+1. scikit learn 
+   http://scikit-learn.org/stable/auto_examples/manifold/plot_compare_methods.html#sphx-glr-auto-examples-manifold-plot-compare-methods-py
+
+2. scipy linkage 
+   https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
+
+
+
+--install-option="--library-path=/Users/pleiades/anaconda2/lib/python2.7/site-packages/graphviz"
+
+
+
+### Daily ### 
+
+>>> 04. 17 
+
+# circular coloring 
+
+import matplotlib.cm as cm
+
+x = np.arange(10)
+ys = [i+x+(i*x)**2 for i in range(10)]
+
+colors = cm.rainbow(np.linspace(0, 1, len(ys)))
+for y, c in zip(ys, colors):
+    plt.scatter(x, y, color=c)
+
+1. 
+
+colors = itertools.cycle(["r", "b", "g"])
+for y in ys:
+    plt.scatter(x, y, color=next(colors))
+
+2. 
+colors = itertools.cycle(cm.rainbow(np.linspace(0, 1, len(ys))))
+for y in ys:
+    plt.scatter(x, y, color=next(colors))
+
+
+
+### Log ### 

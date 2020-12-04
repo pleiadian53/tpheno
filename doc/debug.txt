@@ -1,0 +1,26 @@
+
+
+#   + reshape(X) for LSTM: n_samples: 389350, nt: 10, nf: 4000
+   … 
+ValueError: cannot reshape array of size 1557400000 into shape (389350,10,4000)
+
+  => + dim(X <- ts):
+  =>  model.fit(X_train, y_train,  <- (X, y) instead
+
+
+   model.metrics_names[1]
+   scores = general_evaluation(X_test, y_test, trained_model=model, lb=lb)  # loss, accuracy, auc
+
+
+dir_type = 'model'
+        modelPath = TSet.getPath(cohort=tsHandler.cohort, dir_type=dir_type, create_dir=True)  # ./data/<cohort>/model
+        print('makeTSetCombined> model dir: %s' % modelPath)
+        return modelPath
+
+
+
+if lb is None: lb = binarize_label(y_test)
+        y_test = lb.transform(y_test)
+        scores = trained_model.evaluate(X_test, y_test, verbose=0)
+        print('modelEvaluate> scores: %s' % scores)  # loss, accuracy, auc 
+        return scores

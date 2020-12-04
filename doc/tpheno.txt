@@ -1,0 +1,964 @@
+
+(*) other module docs are to be or have been already subsumed by those underneath the module-specific doc 
+    e.g. for documentation of seqCluster, refer to seqmaker/doc/seqCluster 
+
+
+<design>
+( ) cohort specific output directories? or just use cohort name (e.g. PTSD, diabetes or simply None) as part of the file naming? 
+
+
+##### Directories ##### 
+
+* data-exp 
+  general outputs 
+
+* data-in 
+  processed outputs 
+
+* <module>/data 
+   module-specific data outputs 
+
+* <module>/<cohort>? 
+
+
+##### Usage #####
+
+0. system configuration: run set_env.sh to configure environment vars
+   + set_env.sh    //
+   + sys_config
+   
+
+1. use cohort.py to query DB and generate cohort
+   <related> cohort_analyzer.py   
+
+   + searchByID()
+   + t_search_ptsd(**kargs)
+
+2. seqMaker2.py to convert DB fetch result (i.e. views from cohort.py) to 
+   temporal documents (medical coding sequences)
+
+   + seqTransform  
+   + tpheno.pattern.medcode
+   + tpheno.pattern.diabetes   //cohort-specific definitions (e.g. predicate) 
+   
+2a. seqReader.py to read temporal documents (and save them into .csv)
+       + seqmaker.seqAnalyzer has a few wrappers as well 
+
+3. use seqAnalyzer to compute w2v
+
+   + vectorize() 
+
+4. use seqCluster to compute d2v  
+
+   + vectorize2()    //for PV representation via Doc2Vec class 
+   + build_data_matrix*
+   
+      
+### Usage ### 
+
+Use seqMaker2 or seqMakerGeneric to create coding sequences (given a cohort)
+    cohort_name = 'CKD'
+    for tstamp in (False, True, ): 
+        t_make_seq(save_intermediate=True, 
+            include_timestamps=tstamp, 
+            condition_table='condition_occurrence-query_ids-CKD.csv', 
+            drug_table='drug_exposure-query_ids-CKD.csv', 
+            save_id=True,            # True by default
+            save_csv=True,  # include the structured version of the sequences (header: person_id, sequence, timestamp)
+            cohort=cohort_name)    
+=> make sure .csv is also created which contains ['sequence', 'timestamp'] and optionally 
+   'label' and other meta data
+   
+use vector module to compute document vectors
+use seqAnalyzer for word embedding, symbol lookup
+
+For cohort analysis 
+use seqCluster     
+
+
+      
+### Daily ### 
+
+>>> 09.18 
+
+<usage> 
+
+Symbols 
+  D: collection of documents, each of which is a list of tokens
+     i.e. D is a list of lists of tokens, a 2-D non-uniform array structure
+  T: collection of timestamps, ... 
+  L: labels
+
+  X: feature vectors 
+     2D array, where each row is a document vector
+     3D array when considering session vectors, where each 'training instance' is a 2D array 
+        where each row is a session vector
+
+  y: class labels (e.g. CKD stages)
+
+
+(*) seqClassify
+
+<params> 
+
+# location of MCS source file
+inputfile=kargs.get('inputfile', None), 
+inputdir=kargs.get('inputdir', None),   # None to let system determine the path (~ global cohort)
+ 
+# document set subsampling
+max_n_docs=kargs.get('max_n_docs', None), # max number of documents used to build d2v model (usu for debug only)
+max_n_docs_policy=kargs.get('max_n_docs_policy', 'longest'), # only relevant when docs are sampled
+
+# document filtering (e.g. by length and other criteria)
+min_ncodes=kargs.get('min_ncodes', 10),  # process_docs()
+
+# document editing (e.g. retain only prediagnosis segments)
+time_cutoff=kargs.get('time_cutoff', '2017-08-18'), 
+predicate=kargs.get('predicate', None), 
+policy_segment=kargs.get('policy_segment', 'regular'), 
+include_endpoint=kargs.get('include_endpoint', False), 
+
+
+(*) module summary
+cohort.py 
+   - define cohort
+       e.g. given patient IDs, connect to odhsi db, fetch data (e.g. diag, medication) 
+            and generate MCS for each patient and save all documents in a file 
+seqReader.py
+   - read documents into memory 
+        - readDocFromCSV() 
+            cohort, 
+            inputdir, 
+            ifiles,
+            
+seqGen.py 
+
+docProc.py 
+   - load documents based on cohort
+seqTransform.py   
+   
+
+vector.py 
+  - Given D, produces X
+  - <main> vector.getDocVec(D)
+
+
+run seqClassify.py 
+
+<params> 
+   cohort
+   policy_segment: {'regular', 'prior', 'posterior', }
+   
+   n_features
+   n_timestamps     //applicable only when considering session vectors
+   
+   window: 10 
+   n_iter: 20
+   
+   vocabSize: 20001 (or None)
+
+0. system configuration
+
+   sysConfig()
+   
+   cohort
+   d2v_method
+   seq_ptype: 'regular', 'diag', 'med'
+   
+
+1. build training set based on d2v models from the sequenced EHR data 
+
+   t_model()
+   
+      - given MCS source (sequenced EHR data with temporally ordered data elements)
+        train d2v model and convert the resulting model into a training data set 
+        
+      Two types of vector representations
+      
+      - monolithic document vector
+        each patient is represented by a single MCS (comprising temporally ordered data elements 
+        or bases in the entire medical history)  
+      - session vectors
+      
+   output: (X, y)   
+   
+   
+2. classification 
+
+   t_classify() 
+      i) each training instance is a d2v vector that encodes the entire MCS of a patient
+      ii) sparse representation
+          
+   t_deep_classify()
+      each patient is represented by a sequence of session vectors
+      each sequence of session vectors maps to a CKD stage via a LSTM network
+
+
+
+[todo] 
+
+# seqmaker.seqMaker2
+     make_seq_generic() 
+     codifySeq() 
+
+# document source (ifile) should depend on seq_ptype (i.e. sequence content type)     
+  + seqmaker.seqReader
+    	readDocPerPatient() 
+  + seqmaker.seqAnalzyr 
+    	readDoc 
+        	document source (ifile) should depend on seq_ptype (i.e. sequence content type)
+
+
+>>> 10.17 
+
+
+### Components
+
+# System parameters: seqparams 
+    seqparams.ClassifierParams
+    seqparams.TSet
+    seqparams.TDoc
+
+# (input) data sources
+   data-in, those that not generated by the system, given by the external 
+   data-exp, those generated by the system (including cohort-specific coding sequences)
+
+# document reading and saving 
+   to .dat  < seqmaker.seqAnalyzer.readDoc
+   to .csv  < seqmaker.seqAnalyzer.readToCSV
+# document labeling  < seqmaker.labeling
+   document phenotyping: similar but disease-specific < pattern.<disease>.phenotypeDoc
+
+# document transformation 
+   seqmaker.seqTransform
+
+# vector generation  < seqmaker.vector
+   training set (classification, clustering) < seqmaker.seqparams, seqmaker.tset
+   
+   getDocVecPV()   //no distinction between train and test 
+   getDocVecPV2()   //separate train and test
+       //modify train_model() to find better result
+
+# generate training data 
+    seqClassify.makeTSetCV   //consider CV iteration
+    seqClassify.makeTSet
+    seqCluster.makeTSet
+
+# pathway analyzer (e.g. pre-diagnostic sequences) 
+    pathAnalyzer
+       + prediagnostic sequence  
+    pathwayAnalyzer (older version, specifically for analyzing clustering results)
+
+# motif 
+   Longest Common Sequences, LCS
+# outlier
+
+# classification 
+   classify
+   seqmaker.evaluate
+   seqmaker.modelSelect
+     biClassEvaluate
+     
+   + load training data 
+     seqClassify 
+        loadTSet
+        loadTSetCombined 
+        loadTSetCV 
+        
+# labeling data 
+    labeling 
+    pathAnalyzer (labeling by LCSs)
+
+--------------
+
+### Modules 
+
+seqmaker.tset 
+   parameters and methods specific for making training data (a collection of 
+      vectorized documents/coding sequences)
+
+Action(ed) items use '###' 
+
+### Enviornment 
+python on GEM 
+  conda create -n py36 python=3.6 anaconda
+
+>>> 03.18 
+
+# document embedding
+  + break an MCS down into paragraphs 
+      a. pre-diagnosis + post-diagnosis 
+      b. segments leading up to the principle diagnosis (CKD: check CCS)
+          
+         foreach CKD stage 
+            use a meta classifier to find appropriate linear combinations of segments
+            
+  + implementation 
+      a. paragraph mask 
+         [xxxxyyyzz, zzddddx]
+         xxxx  1 
+         yyy   1
+         zz    1
+         zz    2
+         dddd  2 
+         x     2
+            
+# cluster analysis
+  chi square statistics on n-grams, LCSs
+  find most different n-grams and LCSs and use them to characterize the MCS genes
+  
+<todo> 
+
+1. conditional probability 
+   stage-n to m based on LCSs? 
+   + query LCSs given patients
+     estimate p(x5 | x2) =?   
+   
+2. VAR, association rule mining, colormap
+removing 0 vectors
+ 
+t_lcs_timeseries()
+t_analyze_lcs()
+t_lcs()
+   tset: saveLCSFeatureTSet(), loadLCSFeatureTSet()
+
+>>> 02.18 
+
+
+# research questions
+
+1. using prediagnosis sequence to predict CKD stages? 
+   now plus the decisive CKD-code via CCS => performance increment? 
+   + dense d2v vs sparse 
+   <module> docProc.segmentDocuments()
+   
+2. stage-n to m based on LCSs? 
+   + query LCSs given patients
+     estimate p(x5 | x2) =? 
+     
+3. use only prediagnostic sequence alone to train d2v model
+     
+<implementation> 
+docProc.cutByTimeToDiagnosis(D, T, is_case, min_mention=1)
+cohort.summarizeCohort()
+
+(v) prepare new CKD cohort (another annotated dataset via eMerge algorithm) 
+  <log> ckd_cohort_prep_error.log   ... The query processor ran out of internal resources and could not produce a query plan. 
+
+   
+
+
+>>> 01.18 
+
+(v) relabeling CKD data 
+    e.g. merging ESRD to Stage 5
+
+key routines 
+ + seqClassify
+     binarize, merge, focus   ... alter class labels
+         merge, focus: consolidate labels
+
+processDocuments
+  - loads entires data set of CKD 
+  - but what if we want to find out LCSs for each label? 
+  
+( ) use only prediagnostic sequence alone to train d2v model
+
+# seq2seq ... () 
+
+
+### Paper: focus on cohort='CKD' 
+
+# writing 
+    genomic sequences analogy: http://www.genomenewsnetwork.org/resources/whats_a_genome/Chp2_1.shtml
+
+# interpretation of LCS 
+   272 Disorders of lipoid metabolism
+   272.4 unspecified hyperlipidemia
+   272.0 hypercholesterolemia
+   
+   MED : Atorvastatin is in a group of drugs called HMG CoA reductase inhibitors, or "statins." 
+        Atorvastatin reduces levels of "bad" cholesterol (low-density lipoprotein, or LDL) and triglycerides in the blood, while increasing levels of "good" cholesterol (high-density lipoprotein, or HDL).
+
+# logging 
+  (*) document curation: 
+      + cohort preparation (intermediate files)
+           ckd_cohort_prep.log
+           
+      + cohort statistics 
+           ckd_stats.log
+                
+      + MCS generation
+  
+        ckd_documents.log
+        
+        ckd_documents_large.log (larger cohort from CdwCkdCohort_20170817.csv)
+            : New MCS dimension: (646232, 3) (cohort=CKD) | n_matched: 646231, n_no_data: 26627
+            
+            + ckd_documents_large_from_scratch.log   ... generate MCSs from scratch
+    
+      + relabeling 
+        ckd_relabeling.log
+        
+        
+  (*) classification 
+        + labeled 
+             ckd_classify.log    ... merged 3a, 3b
+             
+             + larger cohort (n=)   ... from CdwCkdCohort_20170817.csv
+                ckd_classify_large.log
+                
+                + subsample each class s.t. n_class <- 5000 
+                   ckd_classify_large-subsampling.log    
+                   
+             + using only prior sequence (sequence leading up to the first diagnosis, excluding 
+               the set of codes within the timestamp where the first diagnosis is found) 
+               => ckd_classify_prior.log => ckd_classify_prior2.log => ckd_classify_prior-old.log
+               
+               <note> most of the documents do not have diagnosis info!! 
+                   + use logisticRegression: ckd_classify_prior_logis.log
+                   
+                   ... <todo>
+               
+             + including end point (which includes the set of codes mentioned in the timestamp 
+               of the first diagnosis) 
+               => ckd_classify_prior_inclusive.log   
+               
+               
+             + sparse 
+                 ckd_classify_sparse.log 
+                 
+                    ckd_classify_sparse_logistic.log   .. using logistic + complete dataset
+                    ckd_classify_sparse_logistic-1K.log ... 1K per class
+                 
+                 > 1K per class also => seqClassifyTest.py
+                 
+                 >>> 5K per class => ckd_classifiy_sparse-randomforest.log
+                 
+                 
+             + spase (6K) test  | logistic
+                => ckd_classify_sparse_6k.log
+                
+            
+        + prior sequence (excluding those with the complete sequence due to the lack of 
+                deciding diagnostic code that separate the prior from the posterior segments)
+            <log> ckd_classify_prior.log   
+        + posterior sequences 
+            <log> ckd_classify_posterior.log    
+            
+             
+        + document similarity analysis (vector.assess)     
+             ckd_doc_assess.log 
+             
+        + augmented + labeled: ckd_classification_augmented.log
+        
+        + using LCSs as features 
+             ckd_classify_lcs.log
+        
+  (*) LCS experiments 
+        ckd_lcs-diag.log  ... analysis of diag sequence 
+        ckd_lcs-med.log 
+        ckd_lcs-reg.log
+        
+        + global LCS candidates ... pathAnalyzer.t_analyze_lcs.deriveLCS2 
+             ckd_global_lcs.log
+             ckd_global_lcs2.log  ... med, diag only separately
+
+        + makeLCSFeatureTSet2() + analyzeLCSFreqDistribution 
+        	 + pathway_lcs.log 
+        	      : sampling subset nD = 5000
+        	      
+        + candidate LCS features and their statistics (frequencies, lcsmap, lcsInvFreqMap, ...) 
+             ckd_lcs_candidates.log
+             
+        + create policy-based LCS feature set via makeLCSFeatureSet3()
+             pathway_lcs.log 
+# 
+
+# pipeline 
+  (*) create augmented training set 
+      1. run cohort.t_augment_cohort   ... to generate patient documents
+      2. run docProc.t_process_docs    ... to get (D, T, L) + stratificaiton by labels
+      3. run seqClassify.t_classify    ... to classify data (e.g. cohort=CKD with 7 labels)
+      
+   (*) create LCS training data  ... ( )
+        t_analyze_lcs() -> deriveLCS2 
+        makeLCSFeatureSet() ... 
+           
+# data 
+  (*) MCS 
+  
+      cohort.t_search_ckd()
+      + intermediate files (dataframe)
+           tpheno/data-exp/CKD/condition_occurrence-query_ids-CKD.csv
+           tpheno/data-exp/CKD/drug_exposure-query_ids-CKD.csv
+           
+      + smaller CKD cohort (n=3256 -> 2833 with data)
+      + new, larger cohort
+           
+           
+  (*) model 
+      tpheno/seqmaker/data/CKD/model/
+  (*) training set data
+      + regular
+          tpheno/seqmaker/data/CKD/combined/tset-n0-IDregular-pv-dm2-GCKD.csv
+      + augmented data
+          tpheno/seqmaker/data/CKD/combined/tset-n0-IDregular-pv-dm2-A-GCKD.csv
+      
+  (*) pathway analysis 
+      tpheno/seqmaker/data/CKD/pathway/pathway_global-df-diag-iso-LCKDStage1.csv
+      tpheno/seqmaker/data/CKD/pathway/pathway_global-df-med-iso-LCKDStage1.csv
+      tpheno/seqmaker/data/CKD/pathway/pathway_global-df-regular-iso-LCKDStage1.csv
+
+# results 
+  document statistics 
+     unique tokens (including noisy tokens?)
+       + original 
+       + augmented 
+  classifier performance 
+     + ROC plot ... 6 classes (5 stages + control)
+          seqmaker/data/CKD/plot/roc-MacroAvgPerClass-GradientBoostingClassifier-CKD-pv-dm2-regular.tif
+          
+          //large cohort + random forest
+          tpheno/seqmaker/data/CKD/plot/roc-microAvg_std-RandomForestClassifier-CKD-pv-dm2-regular.tif
+          tpheno/seqmaker/data/CKD/plot/roc-MacroAvgPerClass-RandomForestClassifier-CKD-pv-dm2-regular.tif
+  
+     + LCS training set  ... ( )
+         using LCS as labels (x) 
+             seqmaker/data/CKD/combined/tset-IDregular-pv-dm2-Llcs-GCKD.csv
+         prefer using LCSs as features   ... ( ) 
+             
+  
+     + without aug 
+       + diag only 
+       + med only
+       + both 
+     + with 
+  identifiability 
+     + diag only, med only, full
+     
+     
+  pathway analysis 
+      + t_lcs_timeseries() ...    
+         show the potentiality of trends of occurrences of medical codes 
+     
+
+# analysis: implementation 
+  (*) consolidate_lcs? # not a huge reduction of LCSs ordered vs unordered
+          <log> consolidate_permutations> numeber of LCS entries: 7627 -> 7584 (smaller?)
+
+( ) t_model() 
+      + need to distinguish all models
+      + cohort-specific document sources are under tpheno/data-exp/<cohort>
+          e.g. /phi/proj/poc7002/tpheno/data-exp/CKD
+          
+      + model file?
+      > seqClassify.makeTSetCombined2() <- D + D_aug
+
+         <check> 
+              makeTSetCombined> training set dir
+              
+      + processDocuments() ineeds to incorporate augmented unlabeled data ... ( )
+
+( ) compare different classifiers 
+    <log> ckd_multiclass.log
+
+    random forest 
+    gradient boost tree
+       + {'n_estimators': [500, 100], 'min_samples_split': [2, 5], 'max_features': [None, 2, 5], 'max_leaf_nodes': [None, 4]}
+          which setting is better? 
+           
+    SVM one-versus-all
+       <check> 
+            selectModel: classifier:
+               
+( ) analyze LCSs
+    + mutliway lcs algorithm: seqmaker.lcs ... ( )  //probably no need
+    
+    
+( ) augmented dataset 
+    <log> ckd_augmented
+    cohort.t_augment_cohort()    //ref: t_sequencing()
+    
+    + perhaps OR is too "loose"? 
+       work on filterCandidatesByCodes( ) ...   at least 2 CKD codes have to appear?
+       
+    + computing document vectors
+    + corpus_stats
+
+# CKD disease stage classification
+      
+  + multiclass classification 
+    seqClassify.t_classify(**kargs)
+    
+  + need to distinguish all models
+        
+
+( ) plotting 
+   a. ROC 
+   b. AUC vs class
+      (module) seqmaker.plotUtils
+         + t_plotly()
+
+
+>>> 12.17
+
+# data 
+  + aggregate all important dataset to summary_data 
+  
+    cohort=PTSD
+    <dir> tpheno/seqmaker/data/PTSD/summary_data
+  
+# use edit distance as a guideline to select LCS (instead of lengths)
+  <module> seqAlgo 
+       t_edit_distance  
+  
+# Does EHR data follow Zipf's law? ... ()
+  
+# seq2seq ... ( )
+# seqTransform 
+    spliceDocuments2()  ... ()   ... taking a segment between end points
+  
+# labeling ... (4) cohort=PTSD
+  + verify unique code set 
+      + label:  
+
+  > LCS labeling strategy, min_ndocs higher and length is kept sufficiently high 
+       : min_ndocs <- 200 
+  > try using number of occurrences within the same sequence to detemrine the LCS label 
+  
+# labeling ... (3) cohort=PTSD   ... ( )
+  <todo> 
+       1. preserve only labels with min_n_docs = 100 ... ( )
+  <log> ptsd_lcs_tset.log | previous version: ptsd_lcs_tset0.log
+        ptsd_lcs_tset-relative_uniq.log
+        ptsd_lcs_classify.log
+  
+  <check> 
+      + number of LCSs as labels:
+      
+      + label frequency distribution: 
+      + number of documents | n_multilabel:
+      + expected number of labels:
+      
+      > label_by_consolidated_single_label(
+         + makeLCSTSet> apply labeling policy: label_by_consolidated_single_label() ...
+         + found %d candidate labels of max length=%d
+        
+      
+      <result> 
+         1. LCSs are too similar 
+         
+            > analyzeLCS.filter_lcs_by_uniq
+                + sample a subset of LCSs by diversity
+           
+           
+  
+# labeling ... (2) ... ( ) 
+  <module> pathAnalyzer
+     cohort=CKD 
+     params: topn_lcs=10, min_length=3, max_length=20, 
+                max_n_pairs=100000, pairing_policy='random', load_lcs=False
+     
+     <log> 
+        test/log/ckd_lcs_tset-regular.log
+        what if only diag? 
+        
+                    
+  + support {prior, posterior} in processDocuments and other functions ... (v)
+      <check> 
+      seqparams> Warning: use normalize_ctype instead. ptype could refer to policy type in seqCluster. 
+     
+
+>>> 11.17 
+
+# sequencing using concept_id ... ( )
+    seqMaker3 
+       query 
+       fetch 
+       makeSeq  ... ongoing 
+    seqparams 
+       getSourceTable()
+
+# sequencing diabetes cohort   ... ( )    
+  + still get parsing errors with timed sequence 
+    <log> test/log/diabetes_cohort.log   # after GEM reboot 12.05.17
+    <check> 
+        verify> resulted empty string from input sequence: 
+        parse> Error: 
+
+
+# labeling 
+   + use labeling or pathwayLabler modules to label the data  (v)
+
+   + use TDoc.getPath to load the data (including transformed version)  (v) 
+   + access 'label' attributes (e.g. 'label', 'label_lcs', 'label_unigram', ...) 
+   
+   + plug labels into corresponding tset ... () 
+   
+   <ongoing> 
+      (v) seqclassifer.processDocuemnts 
+         ensure labeled_seq exists 
+         
+      labeling.labelByLCS 
+      labeling.write()   //write labels (given known labels)
+      
+# [module] pathAnalysis 
+   + prediagnostic sequence analysis 
+   + analyze LCS 
+   + make training data using LCS-based labeling 
+   
+   <check> 
+      Pathway.load> input path:
+      analyzeLCS> Saved LCSs to
+      
+      markTSetByLCS.label_document> Now filling in the labels to
+      TSet.prepareTrainingSet> tset params
+      
+      
+      
+  
+# classification with CV  ... ( )
+  + load n-fold's (X, y) from file   
+       modelSelect.runCVROCMulticlass2(ts_params, **kargs)
+  
+# test 
+  seqClassifier.processDocuments 
+      + (after transform) nDoc: 
+      
+  multiple class performance evaluation 
+      + <log> ckd_multiclass.log
+      
+      + <check> 
+          "how is probability prediction structured?"
+          + y_pred:
+      
+      
+  LCS labeling 
+  general labeling       
+
+# data 
+  + source 
+    foreach cohort (e.g. cohort=CKD)
+        condition_drug_labeled_seq-CKD.csv
+        condition_drug_seq-CKD.dat    # source 
+        condition_drug_seq-CKD.id     # person id 
+        condition_drug_timed_seq-CKD.csv   # timestamps included 
+            header: person_id|sequence|timestamp
+        condition_drug_timed_seq-CKD.dat # source (with timestamps)
+        
+    <check> transformed vs non-transformed 
+            diagnostic-codes-only TDoc has smaller size
+            => size of training set is smaller, need to distingusih the file sets 
+               with different contents
+               
+            => seqClassify.transformDY(docs, **kargs)
+                        transformDocuments2(docs, **kargs)
+                        transformDocuments(docs, **kargs): 
+               ALL needs to save a copy of modified document sources ... ( )
+               
+            => pathAnalyzer
+                  seqparams
+                  TDoc
+        
+  + training set location (cohort=CKD)
+     ./tpheno/seqmaker/data/CKD/combined/tset-n0-IDregular-pv-dm2-GCKD.csv
+  + d2v model: 
+     ./tpheno/seqmaker/data/CKD/Pf100w5i50-regular.dm 
+  + classification:    plot/
+      ./tpheno/seqmaker/data/CKD/plot/roc-late_stage-l2_logistic-IDregular-pv-dm2-GCKD.tif         
+
+
+
+(*) use n_epoch=1 results in better self-similarity test
+    cohort=CKD: 
+       ratio of self similarity (ideally 1.0): 0.724673, top 3: 0.759266
+       ratio of self similarity (ideally 1.0): 0.732086, top 3: 0.764208
+
+       : diagnosis codes only? => acceptable, still 0.70+
+          + ratio of self similarity (ideally 1.0): 0.701382, top 3: 0.735388
+             "for the ease of exposition, we shall address the coding sequences that consists only 
+              of diagnostic codes"
+
+
+# experiment on surrogate labels on diabetes cohort and PTSD ( )
+  + run seqCluster to collect most common n-grams (3-grams) and LCSs
+  
+# classifier evaluation: multiclass ()
+  
+# continue on classifier evaluation ()    //via getDocVecPV() which combines train test 
+    <ref> demo.plot_nested_  
+    <log> ../test/log/ckd_pathway-binary.log
+    
+    <modules> 
+        evaluate.evaluateTrainTestSplit 
+        modelSelect
+            runNestedCVROC  ... ( )
+            
+        + binary classification 
+            biClassEvaluate
+                > binarize> n_pos
+            
+    <setting>  also see tpheno-test
+       1. only diagnostic codes?  => self similarity is slightly less 
+       2. n_epoch = 1 only? ... ()
+          => better 
+               + ratio of self similarity (ideally 1.0): 0.724673, top 3: 0.759266
+               
+       3. smaller feature dimension? 
+          n_features <- 50
+               
+     <classifier> 
+        1. model selection 
+             <check> 
+             	selectModel> classifier parameters after CV:
+                	  // need to do clf.set_params()? 
+                  
+                runCVROC> input classifier:
+               			//input classifier
+    
+# sidetrack: analyze SpA sequences (720.0) 
+  <module> seqmaker.tdoc
+            <check> 
+                + parsing errors in visits
+                + 
+
+>>> 10.17 
+
+() seqReader.reconstructDoc    //.csv -> .dat format by recovering ';' and '$'
+
+# classification 
+  seqClassifier
+  classifyMultiClass
+  
+      demo.plotROCMulticlass    //trying to build a s/w IC
+  
+  merge new/unlabeled training data 
+     <vector> 
+       : getDocVec
+          : getDocModel
+             : evalDocVecPV
+  
+
+# labeling diseases in terms of frequent n-grams, LCSs ... ()
+  pathwayLabeler
+  
+  <input> 
+     + LCS
+          Outputs from pathwayAnalzyer.pClusterPathwayLCS(
+              data/<cohort>/pathway_cluster-lcs_stats 
+     + n-grams
+
+# integer document ID, all document having different IDs  ... ( )
+   <model> tpheno/seqmaker/data/CKD/Mpv-dm-Pf50w5.d2v
+
+   => iter=5: CKD: ratio of self similarity (ideally 1.0): 0.661490, top 3: 0.708436
+   => iter=25: + ratio of self similarity (ideally 1.0): 0.621603, top 3: 0.663607
+   => nf=100, iter=50: ratio of self similarity (ideally 1.0): 0.715849, top 3: 0.763502
+      nf=200, iter=50: + ratio of self similarity (ideally 1.0): 0.723262, top 3: 0.774797
+   
+   + increase number of epochs ( ) 
+   + larger corpus should increase this measure () 
+      + PTSD 
+      + diabetes
+          <check> 
+          		+ makeTSet.test> cohort=
+
+
+=> self similarity ratio of self similarity (ideally 1.0): 0.171197, top 3: 0.207201
+
+     <check> let's try 3 diff labeling schemes
+         1. integers, single entry () 
+         2. class labels, single entry ()
+         3. multiple entries, use TDocTag.canonicalize()   # [1, Stage_3]
+     
+         x TDocTag.canonicalize> input labels in multilabel format.
+         v makeD2VLabels> doc tag examples  
+         
+         v vector.access
+             + d2v_method=%s, labeled? %s, docID unique? %s  >> n_doc: 2833 >=? len(model.docvecs): 2833
+
+
+
+
+### sequence read 
+(v) .dat and .csv not consistent ... missing the last read in seqReader.make_seq
+
+
+
+
+### dataset: CKD 
+n = 2833 
+files: condition_drug_timed_seq-CKD.{dat, csv, id}
+       condition_drug_seq-CKD.{dat, id}
+
+<log> important events
+io> Saved doc (n_doc=2833 =?= n_persons=2833) to /phi/proj/poc7002/tpheno/data-exp/condition_drug_seq-CKD.dat
+io> Saved doc (n_doc=2833 =?= n_persons=2833) to /phi/proj/poc7002/tpheno/data-exp/condition_drug_timed_seq-CKD.dat
+
+
+>>> 09.17
+
+<ongoing> 
+vector.evalVec 
+seqCluster.loadModel
+
+<add> 
+seqmaker.labeling 
+   to train doc2vec model, each input document requires to be associated with a label 
+   this module assigns labels according to given criteria  
+
+
+
+>>> 07.17 
+
+# query RESTful API for descriptions of medication code (NDC) 
+  pattern.query  ... ( )
+
+# query Elixr DB for ICD-10 
+  seqmaker.seqMaker.lookup  
+  <input>  
+  
+  
+
+##### Output #####
+
+### cohort=diabetes
+
+
+### cohort=PTSD
+
+<project>/seqmaker/data
+
+
++ condition: entire cohort, no clustering (via d2v)
+
+(*) partial ordering 
+
+motifs-CMOPdiagnosis-one_class_PTSD-partial-noop-Sdiag-D2Vnull.csv
+motifs-CMOPdiagnosis-one_class_PTSD-partial-posterior-Sdiag-D2Vnull.csv
+motifs-CMOPdiagnosis-one_class_PTSD-partial-prior-Sdiag-D2Vnull.csv
+
+motifs-CMOPmedication-one_class_PTSD-partial-noop-Smed-D2Vnull.csv
+motifs-CMOPmedication-one_class_PTSD-partial-posterior-Smed-D2Vnull.csv
+motifs-CMOPmedication-one_class_PTSD-partial-prior-Smed-D2Vnull.csv
+
+motifs-CMOPmixed-one_class_PTSD-partial-noop-Sregular-D2Vnull.csv
+motifs-CMOPmixed-one_class_PTSD-partial-posterior-Sregular-D2Vnull.csv
+motifs-CMOPmixed-one_class_PTSD-partial-prior-Sregular-D2Vnull.csv
+
+
+(*) total ordering
+
+motifs-CMOPdiagnosis-one_class_PTSD-total-noop-Sdiag-D2Vnull.csv
+motifs-CMOPdiagnosis-one_class_PTSD-total-posterior-Sdiag-D2Vnull.csv
+motifs-CMOPdiagnosis-one_class_PTSD-total-prior-Sdiag-D2Vnull.csv
+
+motifs-CMOPmedication-one_class_PTSD-total-noop-Smed-D2Vnull.csv
+motifs-CMOPmedication-one_class_PTSD-total-posterior-Smed-D2Vnull.csv
+motifs-CMOPmedication-one_class_PTSD-total-prior-Smed-D2Vnull.csv
+
+motifs-CMOPmixed-one_class_PTSD-total-noop-Sregular-D2Vnull.csv
+motifs-CMOPmixed-one_class_PTSD-total-posterior-Sregular-D2Vnull.csv
+motifs-CMOPmixed-one_class_PTSD-total-prior-Sregular-D2Vnull.csv
+     

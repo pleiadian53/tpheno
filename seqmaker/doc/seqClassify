@@ -1,0 +1,30 @@
+Also see tpheno (module level doc)
+
+
+### 11.17 
+
+
+
+### 10.17 
+
+# makeTSet 
+     cohort=CKD
+     <check> 
+         + (after transform) nDoc:
+         
+         + unique labels:
+         
+         + train test split (test:
+         
+         
+         > inside train test split 
+             + train test split (after)
+             + class counts (train)
+             
+         > getDocVecPV2
+             + getDocVecPV2> nTrain: 
+             
+
+
+<check> 
++ after train-test split: type(D_train[i], D_train)

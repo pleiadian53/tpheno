@@ -1,0 +1,5 @@
+
+
+### References ### 
+
+[1] http://stackoverflow.com/questions/3505701/r-grouping-functions-sapply-vs-lapply-vs-apply-vs-tapply-vs-by-vs-aggrega

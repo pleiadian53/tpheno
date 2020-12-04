@@ -1,0 +1,229 @@
+### I/O ### 
+
+(*) d2v model 
+
+tpheno/seqmaker/data/CKD/model/Pf100w10i20-regular-vocab20001.dm
+
+tpheno/seqmaker/data/CKD/model/Pf100w10i20-regular-vocab20001.dbow
+ 
+
+
+(*) sequence model 
+ 
+# training data
+  tpheno/seqmaker/data/CKD/combined/tset-n0-IDregular-pv-dm2-regular-visit-M100t100-GCKD.csv
+
+
+>>> 09.18
+
+
+# classification 
+   LCS: using regular mode, mixture of diag and med codes 
+        => most of the features seem to be med
+
+# pathway analysis 
+
+
+(*) diff between enriched and rare patterns
+
+rare LCS patterns are those that occur least often in the MCS corpus but at least occur in 
+two MCS documents
+
+obtained by configuring the subsampling process to find LCSs that occur
+in at least two MCS documents while 
+
+
+62936: Diphenhydramine -> 
+
+
+lcs|Control|CKD Stage 5|CKD Stage 4|CKD Stage 3|CKD Stage 2|CKD Stage 1|ratio
+MED:62936 MED:62659 MED:69242 MED:61471 MULTUM:11397 NDC:00004003822 MED:87666|0|30|0|0|0|0|1.0
+MED:63182 MED:62439 MED:61678 MED:62659 MED:61836 MED:60553 MED:62439 MED:69242 MED:61836 MED:60762|0|16|0|0|0|0|1.0
+MED:62439 MED:61159 MED:122364 MED:94350 MED:81528 MED:60887 MED:62934 MED:60926 MED:62624 MED:60826|0|3|0|0|0|0|1.0
+MED:63518 MED:122364 MED:62439 MED:62659 MED:69242 MED:61895 MED:60635 MED:61471 MED:81159 MED:60635|0|16|0|0|0|0|1.0
+MED:61836 MED:62439 MED:70786 MED:63540 MED:63350 MED:62685 MED:69488 MED:62664|0|2|0|0|0|0|1.0
+MED:61013 MED:62026 MED:61253 MED:62659 MULTUM:605 MED:62876 MED:67465 NDC:49692094225|0|2|0|0|0|0|1.0
+MED:60926 MED:62838 MED:60553 MED:62522 MED:69242 MED:60553 MED:62659 MED:61471|0|49|0|0|0|0|1.0
+MED:61412 MED:61471 MED:63469 MED:63418 MED:60553 MED:61471 MED:81159 MED:62838|0|2|0|0|0|0|1.0
+MED:62021 MED:60826 MED:61836 MED:63518 MED:62659 MED:101650 MED:69248 NDC:67618010160|0|2|0|0|0|0|1.0
+MED:63540 MED:67464 MED:62659 MED:69954 MED:96730 MED:67464 MED:60920 MED:62934|0|2|0|0|0|0|1.0
+poc7002@gem:/phi/proj/poc7002/tpheno/seqmaker/data/CKD/pathway$ cat /phi/proj/poc7002/tpheno/seqmaker/data/CKD/pathway/lcs_local-df-med-iso-LCKDStage5-Urel-enriched.csv | head -n 11
+lcs|Control|CKD Stage 5|CKD Stage 4|CKD Stage 3|CKD Stage 2|CKD Stage 1|ratio
+MED:122364 MED:60826 MED:61939 MED:61895 MED:62439|369|2654|131|516|580|122|0.6070448307410796
+MED:122364 MED:62439 MED:61939 MED:60826 MED:61895|422|2654|158|663|743|148|0.5543024227234754
+MED:62439 MED:60826 MED:61895 MED:60926 MED:61836|533|2747|128|587|777|257|0.5462318552396103
+MED:60826 MED:60926 MED:61836 MED:61895 MED:62439|559|2747|142|587|836|246|0.5368379910103577
+MED:60826 MED:62439 MED:60926 MED:61836 MED:61895|555|2747|152|609|827|249|0.5345397937341896
+MED:60826 MED:61895 MED:61939 MED:122364 MED:62439|420|2654|203|788|842|158|0.5239881539980257
+MED:60826 MED:61895 MED:62439 MED:60926 MED:62936|708|2420|117|460|712|215|0.5224525043177893
+MED:60826 MED:61836 MED:61895 MED:62439 MED:60926|707|2747|134|618|868|270|0.5140344311377245
+MED:60926 MED:62439 MED:61895 MED:60826 MED:61836|658|2747|154|649|944|283|0.5054277828886845
+MED:60926 MED:60826 MED:62936 MED:62439 MED:61895|716|2420|121|529|808|209|0.5038517593170935
+
+
+
+<condition> MCSs tokenized (with infreq tokens removed) vocabSize = 20000
+
+# classification
+  i)  classical 
+  ii) LSTM + session vectors
+         - small cohort 
+           [('CKD Stage 4', 0.6842598110155784), ('CKD Stage 3', 0.7560451709705441), ('CKD Stage 2', 0.8215765247410817), ('Control', 0.85483432916893), ('CKD Stage 1', 0.9245283018867925), ('CKD Stage 5', 0.947136563876652)]
+
+             + min | class=CKD Stage 4, auc=0.684260
+  			 + max | class=CKD Stage 5, auc=0.947137
+  		     + micro auc=0.891813 | macro auc=0.832868
+  		     
+  		   [('CKD Stage 4', 0.6728526432280582), ('CKD Stage 3', 0.7556187317381348), ('CKD Stage 2', 0.8012197928653625), ('CKD Stage 1', 0.8059735696279887), ('Control', 0.8469999582166882), ('CKD Stage 5', 0.92792182219495)]
+
+
+
+  see Quip for different experimental settings ... ( )
+
+
+------
+
+# classification: classic 
+  + min | class=CKD Stage 3, auc=0.721510
+  + max | class=CKD Stage 5, auc=0.941698
+  
+  : can LSTM beat it?
+  
+# classification: session vectors (small cohort) 
+  <app> seqClassifyTest2-SmallCKD  ... win4 | ckd_visit_small  ... ( )
+        <add> limit n_tokens, integer repr 
+  
+  <memo> 
+  1. kept having trouble with index out of range after tokenization (docProc)  ... ( )
+     - t.word_index? ( )   t.texts_to_sequences() ... how does it work? ... ( )
+  
+
+# classification: session vectors 
+   <app> ckd_visit_nlookup10.log 
+            n_lookback = 10  ... (v)    
+            <result> min CKD Stage 1, score: 0.607778) ~  max: CKD Stage 5, score: 0.858558   
+         
+   <app> seqClassifyTest-VisitN2 ... win 2 | ckd_visit2 
+         n_lookback = 20  ... ( )
+         batch_size = 16
+   
+         CKD Stage 1, score: 0.573815
+         CKD Stage 5, score: 0.858491
+   
+   accuracy not increasing easily
+      try larger batch? 
+      
+   <app> seqClassifyTest-VisitN3 
+      n_lookback=20 but 
+      batch_size = 64    ... (x)   
+      
+      <result>
+      	bp=64 ... no adv over bp=16
+      	CKD Stage 2, score: 0.561519
+      	CKD Stage 5, score: 0.844474
+      
+      bp=8? n_trials=10 to get error  ... ( )   //... win3 | ckd_visit3 <app> seqClassifyTest-VisitN3
+         => Memory Error!
+      
+      
+   <app>   seqClassifyTest-VisitN  ... win1 | ckd_visit
+      n_lookback=40, batch_size=16  ... ( )
+      [('CKD Stage 1', 0.6066075754907285), ('CKD Stage 2', 0.6430259229604685), ('CKD Stage 3', 0.7037508145796572), ('CKD Stage 4', 0.719593301381853), ('Control', 0.8072157730832694), ('CKD Stage 5', 0.8686058999652858)]
+      
+      min: CKD Stage 1, score: 0.606608
+      max: CKD Stage 5, score: 0.868606
+      
+   # diverge problem: no adjustment vs adjust learning rate on SGD
+   <app> seqClassify  ... win0 | ckd_visit0.log
+      n_lookback=100, bs:16, ep:2000, pa:200   ... ( )
+        => 
+        
+   <app> seqClassifyTest-VisitN  ... win1 | ckd_visit.log 
+      n_lookback=100, bs:16, ep:2000, pa:200  ... ( )  
+         => Memory Error! 
+      
+
+# session statistics (CKD cohort: 08172016) 
+
++ avgL: 3.056786, max n_tokens_in_visit: 104, min: 1, std: 4.183465
+  + avgV: 38.118913, max n_visits_in_doc:   2019, min: 1, std: 61.838292
+info> Found 15953799 short sessions (< 10 tokens)
+visitToDocment> size(V):447984 -> size(Dv):17076663 (E[nVperDoc]=38.118913)
+
+# phenotyped cohort: CKD 
+  <date> 2017-08-17
+  n = 672859 ~ 600K+ ~ 0.6M+ (old) 
+
+  n = 657591 ~ 600K+ ~ 0.6M+
+      <note> from queries: n=672858
+
+# documents 
+  - number of documents 
+      how many in each stage? 
+  - number of unique tokens 
+  - codified vs non-codified elements … ( ) 
+  - the proportion of MCS with informative diagnostic codes ()
+
+# session statisitcs 
+  - on average each patient has X sessions 
+    min, max, std 
+  - each session on average has Y number of tokens 
+    min, max, std => max_visit_length (100 for now)
+
+    + avgL: 2.926463, max n_tokens_in_visit: 104, min: 1, std: 4.073773
+    + avgV: 36.274221, max n_visits_in_doc:   1925, min: 1, std: 60.708061
+
+# Documentation patterns 
+  - CKD is associated with multiple comorbid conditions. 
+    > show a few examples in a table … ( ) 
+
+# pathway analysis
+
+a. LCS enriche/rare pattern 
+
+b. LCS as features to classify CKD stages 
+
+c. Characteristic LCS patterns/genes 
+
+
+# classfication 
+
+a. sparse represntation 
+
+b. classical calssifiation via paragraph vector 
+
+c. LSTM with session vectors
+   each visit <- boostrapping the codes
+        max_visit_length = 100  # this is determined by statistics  
+        n_features = 100, window = 10 (5 by default), min_count = 2
+
+d. what happens if only pre-diagnositic or ony postdiagnostic sequences? 
+
+(pathway) b 
+
+
+—— 
+<paper>
+
+# CKD
+  diabetic kidney disease 
+  hypertension in CKD
+  <ref> https://www.asn-online.org/education/training/fellows/HFHS_CKD_V6.pdf
+
+  - diagnostic coding principles  
+ 
+    CKD is associated with multiple comorbid conditions, most CKD patients can be assigned multiple codes: anemia of CKD (285.21), benign HTN with CKD (403.1x), proteinuria (791.0),dyslipidemia (272.x), metabolic acidosis (276.2), and renal edema formation (276.6), without heart failure.
+
+  - CKD staging and progression has their (relatively) unique coding patterns, which will be shown shortly in Section ?)
+    -     
+
+
+
+# document embedding
+# paragraph vector
+
+Paragraph Vector, an unsupervised algo- rithm that learns fixed-length feature representa- tions from variable-length pieces of texts, such as sentences, paragraphs, and documents.
+
+  - distributed hypothesis 
+    … all methods depend in some way or another on the Distributional Hypothesis, which states that words that appear in the same contexts share semantic meaning
+
